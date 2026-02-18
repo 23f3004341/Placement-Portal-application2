@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ role_title }} Dashboard | Placement Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card main-card">
+            <div class="card-body p-4 p-md-5">
+                <h1 class="display-6 fw-bold mb-3">{{ role_title }} Dashboard</h1>
+                <p class="text-secondary mb-0">
+                    Welcome to your {{ role_title|lower }} workspace.
+                    Role-specific modules can now be added here.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

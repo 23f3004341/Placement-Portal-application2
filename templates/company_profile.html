@@ -1,0 +1,51 @@
+{% extends "company_base.html" %}
+{% block company_title %}Company Profile{% endblock %}
+
+{% block company_page_content %}
+<section class="card section-card">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-3">Company Registration & Profile Management</h5>
+        <form method="post" class="row g-3">
+            {{ form.hidden_tag() }}
+            <div class="col-md-6">
+                {{ form.company_name.label(class="form-label required-label") }}
+                {{ form.company_name(class="form-control") }}
+                {% for error in form.company_name.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="col-md-6">
+                {{ form.website.label(class="form-label") }}
+                {{ form.website(class="form-control", placeholder="https://www.company.com") }}
+                {% for error in form.website.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="col-md-6">
+                {{ form.industry.label(class="form-label") }}
+                {{ form.industry(class="form-control") }}
+            </div>
+            <div class="col-md-6">
+                {{ form.headquarters.label(class="form-label") }}
+                {{ form.headquarters(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.hr_name.label(class="form-label") }}
+                {{ form.hr_name(class="form-control") }}
+            </div>
+            <div class="col-md-4">
+                {{ form.hr_email.label(class="form-label") }}
+                {{ form.hr_email(class="form-control") }}
+                {% for error in form.hr_email.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+            </div>
+            <div class="col-md-4">
+                {{ form.hr_phone.label(class="form-label") }}
+                {{ form.hr_phone(class="form-control") }}
+            </div>
+            <div class="col-12">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", rows="4") }}
+            </div>
+            <div class="col-12 d-flex justify-content-end">
+                {{ form.submit(class="btn btn-primary px-4") }}
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

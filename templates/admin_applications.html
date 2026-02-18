@@ -1,0 +1,38 @@
+{% extends "admin_base.html" %}
+{% block admin_title %}All Applications{% endblock %}
+
+{% block admin_page_content %}
+<section class="card section-card">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">All Applications</h5>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>App ID</th>
+                        <th>Student</th>
+                        <th>Roll No.</th>
+                        <th>Drive</th>
+                        <th>Status</th>
+                        <th>Applied At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td>{{ app.application_id }}</td>
+                        <td>{{ app.student.user.user_name }}</td>
+                        <td>{{ app.student.roll_number }}</td>
+                        <td>{{ app.job_position.title }}</td>
+                        <td><span class="badge status-badge badge-status-{{ app.status|lower }}">{{ app.status|capitalize }}</span></td>
+                        <td>{{ app.applied_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-secondary">No applications found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "company_base.html" %}
+{% block company_title %}Placement Drives{% endblock %}
+
+{% block company_page_content %}
+<section class="card section-card">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h5 class="fw-bold mb-0">Created Placement Drives</h5>
+            {% if current_user.is_approved %}
+            <a class="btn btn-primary btn-sm" href="{{ url_for('main.company_create_drive') }}">Create Drive</a>
+            {% else %}
+            <button class="btn btn-primary btn-sm" type="button" disabled>Create Drive</button>
+            {% endif %}
+        </div>
+
+        {% if not current_user.is_approved %}
+        <div class="alert alert-warning">
+            Drive creation is enabled only after admin approval.
+        </div>
+        {% endif %}
+
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Deadline</th>
+                        <th>Applicants</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for drive in drives %}
+                    <tr>
+                        <td>{{ drive.job_id }}</td>
+                        <td>{{ drive.title }}</td>
+                        <td>{{ drive.status }}</td>
+                        <td>{{ drive.application_deadline or "-" }}</td>
+                        <td>{{ applicant_counts.get(drive.job_id, 0) }}</td>
+                        <td class="d-flex flex-wrap gap-2">
+                            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.company_edit_drive', job_id=drive.job_id) }}">Edit</a>
+                            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.company_drive_applications', job_id=drive.job_id) }}">Applications</a>
+                            {% if drive.is_active %}
+                            <button class="btn btn-outline-warning btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#closeDriveModal{{ drive.job_id }}">Close</button>
+                            {% endif %}
+                            <button class="btn btn-outline-danger btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#deleteDriveModal{{ drive.job_id }}">Remove</button>
+
+                            {% if drive.is_active %}
+                            <div class="modal fade" id="closeDriveModal{{ drive.job_id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h6 class="modal-title">Close Drive</h6>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Close drive <strong>{{ drive.title }}</strong>? Students will no longer be able to apply.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                            <form method="post" action="{{ url_for('main.company_close_drive', job_id=drive.job_id) }}">
+                                                <input type="hidden" name="next" value="{{ request.full_path }}">
+                                                <button class="btn btn-warning btn-sm" type="submit">Confirm Close</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="modal fade" id="deleteDriveModal{{ drive.job_id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h6 class="modal-title">Remove Drive</h6>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Remove drive <strong>{{ drive.title }}</strong> from active listings?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                            <form method="post" action="{{ url_for('main.company_delete_drive', job_id=drive.job_id) }}">
+                                                <input type="hidden" name="next" value="{{ request.full_path }}">
+                                                <button class="btn btn-danger btn-sm" type="submit">Confirm Remove</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-secondary">No placement drives found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

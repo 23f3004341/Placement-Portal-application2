@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{% block company_title %}Company{% endblock %} | Placement Portal{% endblock %}
+
+{% block content %}
+<section class="company-page-shell">
+    <div class="company-topbar">
+        <div class="company-topbar-title">Company Portal</div>
+        <nav class="company-menu">
+            <a class="{% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('main.company_dashboard') }}">Dashboard</a>
+            <a class="{% if active_page == 'drives' %}active{% endif %}" href="{{ url_for('main.company_drives') }}">Placement Drives</a>
+            <a class="{% if active_page == 'applications' %}active{% endif %}" href="{{ url_for('main.company_applications') }}">Applications</a>
+            <a class="{% if active_page == 'profile' %}active{% endif %}" href="{{ url_for('main.company_profile') }}">Company Profile</a>
+        </nav>
+    </div>
+
+    <div class="company-content-wrap d-grid gap-3">
+        {% block company_page_content %}{% endblock %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Company Registration | Placement Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card main-card">
+            <div class="card-body p-4 p-md-5">
+                <h3 class="fw-bold mb-4">Company Registration</h3>
+                <p class="text-secondary mb-4">Submit your organization profile for admin approval.</p>
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <h6 class="text-uppercase text-secondary mb-3">Company Account Details</h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            {{ form.company_name.label(class="form-label required-label") }}
+                            {{ form.company_name(class="form-control", placeholder="Registered company name") }}
+                            {% for error in form.company_name.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.email_address.label(class="form-label required-label") }}
+                            {{ form.email_address(class="form-control", placeholder="official@company.com") }}
+                            {% for error in form.email_address.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.password.label(class="form-label required-label") }}
+                            <div class="position-relative">
+                                {{ form.password(class="form-control pe-5", id="password", placeholder="Create a password") }}
+                                <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-secondary" role="button" aria-label="Toggle password visibility" data-password-toggle="password"></i>
+                            </div>
+                            {% for error in form.password.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.confirm_password.label(class="form-label required-label") }}
+                            <div class="position-relative">
+                                {{ form.confirm_password(class="form-control pe-5", id="confirm_password", placeholder="Re-enter password") }}
+                                <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-secondary" role="button" aria-label="Toggle confirm password visibility" data-password-toggle="confirm_password"></i>
+                            </div>
+                            {% for error in form.confirm_password.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.contact_number.label(class="form-label required-label") }}
+                            {{ form.contact_number(class="form-control", placeholder="Official contact number", inputmode="numeric", pattern="\\d{10}", maxlength="10") }}
+                            {% for error in form.contact_number.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase text-secondary mb-3">Address Details</h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-12">
+                            {{ form.address_line1.label(class="form-label required-label") }}
+                            {{ form.address_line1(class="form-control", placeholder="Office address line 1") }}
+                            {% for error in form.address_line1.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-12">
+                            {{ form.address_line2.label(class="form-label") }}
+                            {{ form.address_line2(class="form-control", placeholder="Office address line 2 (optional)") }}
+                            {% for error in form.address_line2.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.landmark.label(class="form-label") }}
+                            {{ form.landmark(class="form-control", placeholder="Nearby landmark (optional)") }}
+                            {% for error in form.landmark.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.city.label(class="form-label required-label") }}
+                            {{ form.city(class="form-control autofill-readonly", placeholder="Autofilled", id="city", readonly=True) }}
+                            {% for error in form.city.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.state.label(class="form-label required-label") }}
+                            {{ form.state(class="form-control autofill-readonly", placeholder="Autofilled", id="state", readonly=True) }}
+                            {% for error in form.state.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.country.label(class="form-label required-label") }}
+                            {{ form.country(class="form-control autofill-readonly", placeholder="Autofilled", id="country", readonly=True) }}
+                            {% for error in form.country.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.pincode.label(class="form-label required-label") }}
+                            {{ form.pincode(class="form-control pincode-autofill", id="pincode", placeholder="6-digit pincode", inputmode="numeric", pattern="\\d{6}", maxlength="6") }}
+                            {% for error in form.pincode.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase text-secondary mb-3">Company Details</h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            {{ form.website.label(class="form-label") }}
+                            {{ form.website(class="form-control", placeholder="https://www.company.com") }}
+                            {% for error in form.website.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.industry.label(class="form-label") }}
+                            {{ form.industry(class="form-control", placeholder="Industry") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.headquarters.label(class="form-label") }}
+                            {{ form.headquarters(class="form-control", placeholder="Headquarters location") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.hr_name.label(class="form-label required-label") }}
+                            {{ form.hr_name(class="form-control", placeholder="HR contact name") }}
+                            {% for error in form.hr_name.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.hr_email.label(class="form-label required-label") }}
+                            {{ form.hr_email(class="form-control", placeholder="hr@company.com") }}
+                            {% for error in form.hr_email.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form.hr_phone.label(class="form-label required-label") }}
+                            {{ form.hr_phone(class="form-control", placeholder="10-digit HR number", inputmode="numeric", pattern="\\d{10}", maxlength="10") }}
+                            {% for error in form.hr_phone.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-12">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows="3", placeholder="Brief overview of your company") }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid d-md-flex justify-content-md-end">
+                        {{ form.submit(class="btn btn-primary px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

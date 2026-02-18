@@ -1,0 +1,56 @@
+{% extends "company_base.html" %}
+{% block company_title %}Applications{% endblock %}
+
+{% block company_page_content %}
+<section class="card section-card">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">All Student Applications</h5>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>App ID</th>
+                        <th>Drive</th>
+                        <th>Student</th>
+                        <th>Roll No.</th>
+                        <th>Status</th>
+                        <th>Applied At</th>
+                        <th>Update</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td>{{ app.application_id }}</td>
+                        <td>{{ app.job_position.title }}</td>
+                        <td>{{ app.student.user.user_name }}</td>
+                        <td>{{ app.student.roll_number }}</td>
+                        <td><span class="badge status-badge badge-status-{{ app.status|lower }}">{{ app.status|capitalize }}</span></td>
+                        <td>{{ app.applied_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                        <td class="d-flex flex-wrap gap-2">
+                            <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
+                                <input type="hidden" name="next" value="{{ request.full_path }}">
+                                <input type="hidden" name="action" value="shortlisted">
+                                <button class="btn btn-outline-primary btn-sm" type="submit">Shortlist</button>
+                            </form>
+                            <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
+                                <input type="hidden" name="next" value="{{ request.full_path }}">
+                                <input type="hidden" name="action" value="selected">
+                                <button class="btn btn-outline-success btn-sm" type="submit">Select</button>
+                            </form>
+                            <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
+                                <input type="hidden" name="next" value="{{ request.full_path }}">
+                                <input type="hidden" name="action" value="rejected">
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="text-secondary">No applications found yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

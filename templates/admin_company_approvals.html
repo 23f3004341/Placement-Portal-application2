@@ -1,0 +1,45 @@
+{% extends "admin_base.html" %}
+{% block admin_title %}Company Approvals{% endblock %}
+
+{% block admin_page_content %}
+<section class="card section-card">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">Pending Company Registrations</h5>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Contact</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in pending_company_users %}
+                    <tr>
+                        <td>{{ user.user_name }}</td>
+                        <td>{{ user.email_address }}</td>
+                        <td>{{ user.contact_number or "-" }}</td>
+                        <td class="d-flex gap-2">
+                            <form method="post" action="{{ url_for('main.admin_company_approval', user_id=user.user_id) }}">
+                                <input type="hidden" name="action" value="approve">
+                                <input type="hidden" name="next" value="{{ request.full_path }}">
+                                <button class="btn btn-success btn-sm" type="submit">Approve</button>
+                            </form>
+                            <form method="post" action="{{ url_for('main.admin_company_approval', user_id=user.user_id) }}">
+                                <input type="hidden" name="action" value="reject">
+                                <input type="hidden" name="next" value="{{ request.full_path }}">
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-secondary">No pending company approvals.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

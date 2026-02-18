@@ -1,0 +1,49 @@
+{% extends "student_base.html" %}
+{% block student_title %}Approved Drives{% endblock %}
+
+{% block student_page_content %}
+<section class="card section-card">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">Approved Placement Drives</h5>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Company</th>
+                        <th>Location</th>
+                        <th>Deadline</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for drive in drives %}
+                    <tr>
+                        <td>{{ drive.job_id }}</td>
+                        <td>{{ drive.title }}</td>
+                        <td>{{ drive.company.company_name }}</td>
+                        <td>{{ drive.location or "-" }}</td>
+                        <td>{{ drive.application_deadline or "-" }}</td>
+                        <td>
+                            {% set deadline_passed = drive.application_deadline and drive.application_deadline < today %}
+                            {% if drive.job_id in applied_job_ids %}
+                            <span class="badge text-bg-success">Applied</span>
+                            {% elif deadline_passed %}
+                            <span class="badge text-bg-danger">Closed</span>
+                            {% else %}
+                            <form method="post" action="{{ url_for('main.student_apply_drive', job_id=drive.job_id) }}">
+                                <button class="btn btn-primary btn-sm" type="submit">Apply</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-secondary">No approved drives are available right now.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}
