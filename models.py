@@ -18,7 +18,6 @@ class User(UserMixin, db.Model):
     gender = db.Column(db.String(30))
     dob = db.Column(db.Date)
 
-    # admin | company | student
     user_role = db.Column(db.String(20), nullable=False, index=True)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     is_approved = db.Column(db.Boolean, nullable=False, default=False)
@@ -132,7 +131,6 @@ class JobPosition(db.Model):
     job_type = db.Column(db.String(40), nullable=False, default="full-time")
     location = db.Column(db.String(120))
     salary_lpa = db.Column(db.Float)
-    salary_unit = db.Column(db.String(20), nullable=False, default="lpa")
     openings = db.Column(db.Integer, nullable=False, default=1)
     min_cgpa = db.Column(db.Float)
     eligible_degrees = db.Column(db.Text)
@@ -140,7 +138,6 @@ class JobPosition(db.Model):
     description = db.Column(db.Text)
     application_deadline = db.Column(db.Date)
 
-    # pending | approved | rejected | closed
     status = db.Column(db.String(20), nullable=False, default="pending", index=True)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -170,7 +167,6 @@ class Application(db.Model):
     applied_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     cover_letter = db.Column(db.Text)
 
-    # applied | shortlisted | selected | rejected | withdrawn
     status = db.Column(db.String(20), nullable=False, default="applied", index=True)
 
     student = db.relationship("StudentProfile", back_populates="applications")
@@ -207,7 +203,6 @@ class Placement(db.Model):
     offer_date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     joining_date = db.Column(db.Date)
 
-    # offered | accepted | declined | joined
     placement_status = db.Column(db.String(20), nullable=False, default="offered", index=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
@@ -225,7 +220,7 @@ class AccountRestriction(db.Model):
 
     restriction_id = db.Column(db.Integer, primary_key=True)
     email_address = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    reason = db.Column(db.String(30), nullable=False, index=True)  # blacklisted | removed
+    reason = db.Column(db.String(30), nullable=False, index=True) 
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def __repr__(self):

@@ -213,11 +213,11 @@ def _admin_chart_images(stats):
     drive_outcomes = stats["drive_outcomes"]
     status_order = ["applied", "selected", "shortlisted", "withdrawn", "rejected"]
     status_colors = {
-        "applied": "#4f8bd6",      # blue
-        "selected": "#a8d68ec4",     # green
-        "shortlisted": "#f2c84cd6",  # yellow
-        "withdrawn": "#c0c0c0",    # light grey
-        "rejected": "#e74c3c",     # red
+        "applied": "#4f8bd6",     
+        "selected": "#a8d68ec4",     
+        "shortlisted": "#f2c84cd6",  
+        "withdrawn": "#c0c0c0",    
+        "rejected": "#e74c3c",     
     }
     labels = status_order
     values = [application_status.get(status, 0) for status in labels]
@@ -1552,7 +1552,6 @@ def company_delete_drive(job_id):
         return auth_error
     company_profile_obj = _company_profile_for_current_user()
     drive = JobPosition.query.filter_by(job_id=job_id, company_id=company_profile_obj.company_id).first_or_404()
-    # Keep historical application/placement records intact.
     drive.is_active = False
     drive.status = "closed"
     db.session.commit()
