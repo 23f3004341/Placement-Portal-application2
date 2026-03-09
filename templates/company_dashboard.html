@@ -13,12 +13,11 @@
     <div class="card-body p-4">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <h4 class="fw-bold mb-0">Company Details</h4>
-            <a class="btn btn-primary btn-sm" href="{{ url_for('main.company_profile') }}">Edit Profile</a>
+            <a class="btn btn-primary btn-sm company-action-btn" href="{{ url_for('main.company_profile') }}">Edit Profile</a>
         </div>
         <div class="company-details-grid">
             <div><strong>Company Name:</strong> {{ company_profile.company_name }}</div>
             <div><strong>Email:</strong> {{ current_user.email_address }}</div>
-            <div><strong>Contact:</strong> {{ current_user.contact_number or "-" }}</div>
             <div><strong>HR Name:</strong> {{ company_profile.hr_name or "-" }}</div>
             <div><strong>HR Email:</strong> {{ company_profile.hr_email or "-" }}</div>
             <div><strong>HR Contact:</strong> {{ company_profile.hr_phone or "-" }}</div>
@@ -33,16 +32,38 @@
 </section>
 
 <section class="card section-card">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-3">Drive Analytics</h5>
+        <div class="row g-3">
+            <div class="col-12 col-lg-6">
+                <img
+                    class="img-fluid w-100 border rounded"
+                    src="data:image/png;base64,{{ company_drive_status_chart }}"
+                    alt="Company drive status chart"
+                >
+            </div>
+            <div class="col-12 col-lg-6">
+                <img
+                    class="img-fluid w-100 border rounded"
+                    src="data:image/png;base64,{{ company_application_status_chart }}"
+                    alt="Company application status chart"
+                >
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card section-card">
     <div class="card-body">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <h5 class="fw-bold mb-0">Created Placement Drives</h5>
-            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.company_create_drive') }}">Create New Drive</a>
+            <a class="btn btn-outline-secondary btn-sm company-action-btn" href="{{ url_for('main.company_create_drive') }}">Create New Drive</a>
         </div>
         <div class="table-responsive">
             <table class="table table-sm align-middle">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Drive No.</th>
                         <th>Title</th>
                         <th>Status</th>
                         <th>Deadline</th>
@@ -53,7 +74,7 @@
                 <tbody>
                     {% for drive in drives %}
                     <tr>
-                        <td>{{ drive.job_id }}</td>
+                        <td title="Global ID: {{ drive.job_id }}">{{ loop.index }}</td>
                         <td>{{ drive.title }}</td>
                         <td>{{ drive.status }}</td>
                         <td>{{ drive.application_deadline or "-" }}</td>

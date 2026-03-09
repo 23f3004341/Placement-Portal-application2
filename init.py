@@ -5,7 +5,7 @@ from flask import Flask
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import event
+from sqlalchemy import event, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 
@@ -87,6 +87,19 @@ def create_default_admin():
         print(f"Skipping default admin creation due to: {exc}")
 
 
+def _ensure_runtime_schema_updates():
+    try:
+        columns = db.session.execute(text("PRAGMA table_info(job_positions)")).fetchall()
+        column_names = {row[1] for row in columns}
+        if "eligible_degrees" not in column_names:
+            db.session.execute(text("ALTER TABLE job_positions ADD COLUMN eligible_degrees TEXT"))
+        if "salary_unit" not in column_names:
+            db.session.execute(text("ALTER TABLE job_positions ADD COLUMN salary_unit TEXT DEFAULT 'lpa'"))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+
 def create_app():
     app = Flask(__name__, template_folder="templates")
 
@@ -105,8 +118,9 @@ def create_app():
 
     with app.app_context():
         try:
-            import models  # noqa: F401
+            import models
             db.create_all()
+            _ensure_runtime_schema_updates()
             create_default_admin()
         except Exception as exc:
             print(f"Database bootstrap skipped: {exc}")

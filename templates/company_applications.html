@@ -11,39 +11,59 @@
                     <tr>
                         <th>App ID</th>
                         <th>Drive</th>
+                        <th>Company</th>
                         <th>Student</th>
                         <th>Roll No.</th>
-                        <th>Status</th>
+                        <th>Status/Update</th>
                         <th>Applied At</th>
-                        <th>Update</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for app in applications %}
+                    {% set selected_elsewhere = app.student_id in company_selected_student_ids and app.status != 'selected' %}
+                    {% set status_label = 'Already placed at a different role' if selected_elsewhere else app.status|capitalize %}
+                    {% set status_class = 'badge-status-placed-elsewhere' if selected_elsewhere else 'badge-status-' ~ app.status|lower %}
+                    {% set show_shortlist = (not selected_elsewhere) and app.status == 'applied' %}
+                    {% set show_shortlisted_actions = (not selected_elsewhere) and app.status == 'shortlisted' %}
                     <tr>
                         <td>{{ app.application_id }}</td>
                         <td>{{ app.job_position.title }}</td>
-                        <td>{{ app.student.user.user_name }}</td>
-                        <td>{{ app.student.roll_number }}</td>
-                        <td><span class="badge status-badge badge-status-{{ app.status|lower }}">{{ app.status|capitalize }}</span></td>
-                        <td>{{ app.applied_at.strftime("%Y-%m-%d %H:%M") }}</td>
-                        <td class="d-flex flex-wrap gap-2">
-                            <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
-                                <input type="hidden" name="next" value="{{ request.full_path }}">
-                                <input type="hidden" name="action" value="shortlisted">
-                                <button class="btn btn-outline-primary btn-sm" type="submit">Shortlist</button>
-                            </form>
-                            <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
-                                <input type="hidden" name="next" value="{{ request.full_path }}">
-                                <input type="hidden" name="action" value="selected">
-                                <button class="btn btn-outline-success btn-sm" type="submit">Select</button>
-                            </form>
-                            <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
-                                <input type="hidden" name="next" value="{{ request.full_path }}">
-                                <input type="hidden" name="action" value="rejected">
-                                <button class="btn btn-outline-danger btn-sm" type="submit">Reject</button>
-                            </form>
+                        <td>{{ app.job_position.company.company_name }}</td>
+                        <td>
+                            <a class="company-student-link" href="{{ url_for('main.company_student_profile_view', student_id=app.student_id) }}">
+                                {{ app.student.user.user_name }}
+                            </a>
                         </td>
+                        <td>{{ app.student.roll_number }}</td>
+                        <td>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <span class="badge status-badge {{ status_class }}">{{ status_label }}</span>
+                                {% if show_shortlist %}
+                                <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
+                                    <input type="hidden" name="next" value="{{ request.full_path }}">
+                                    <input type="hidden" name="action" value="shortlisted">
+                                    <button class="btn btn-outline-primary btn-sm" type="submit">Shortlist</button>
+                                </form>
+                                <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
+                                    <input type="hidden" name="next" value="{{ request.full_path }}">
+                                    <input type="hidden" name="action" value="rejected">
+                                    <button class="btn btn-outline-danger btn-sm" type="submit">Reject</button>
+                                </form>
+                                {% elif show_shortlisted_actions %}
+                                <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
+                                    <input type="hidden" name="next" value="{{ request.full_path }}">
+                                    <input type="hidden" name="action" value="selected">
+                                    <button class="btn btn-outline-success btn-sm" type="submit">Select</button>
+                                </form>
+                                <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
+                                    <input type="hidden" name="next" value="{{ request.full_path }}">
+                                    <input type="hidden" name="action" value="rejected">
+                                    <button class="btn btn-outline-danger btn-sm" type="submit">Reject</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>{{ app.applied_at.strftime("%Y-%m-%d") }}</td>
                     </tr>
                     {% else %}
                     <tr><td colspan="7" class="text-secondary">No applications found yet.</td></tr>

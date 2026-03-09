@@ -26,7 +26,10 @@
 
                     <div class="mb-3">
                         {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control", placeholder="Enter your password") }}
+                        <div class="position-relative">
+                            {{ form.password(class="form-control pe-5", id="login_password", placeholder="Enter your password") }}
+                            <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-secondary" role="button" aria-label="Toggle password visibility" data-password-toggle="login_password"></i>
+                        </div>
                         {% for error in form.password.errors %}
                         <small class="text-danger d-block">{{ error }}</small>
                         {% endfor %}

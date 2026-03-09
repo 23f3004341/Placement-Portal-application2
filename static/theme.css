@@ -51,10 +51,67 @@ p, span, label, a, li, td, th {
     backdrop-filter: blur(8px);
 }
 
+body.theme-admin .app-navbar {
+    background: rgba(240, 247, 255, 0.94);
+    border-bottom-color: #cfdcf0;
+}
+
+body.theme-student .app-navbar {
+    background: rgba(236, 251, 244, 0.94);
+    border-bottom-color: #b8e8d2;
+}
+
+body.theme-company .app-navbar {
+    background: rgba(255, 242, 230, 0.96);
+    border-bottom-color: #ffd3b3;
+}
+
+.app-navbar .container-app {
+    max-width: none;
+    padding-left: 0.35rem;
+    padding-right: 0.9rem;
+}
+
 .app-brand {
     color: var(--text-strong);
     font-weight: 800;
     letter-spacing: 0.2px;
+}
+
+.role-top-menu {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.role-nav-link {
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.4rem 0.62rem;
+    border-radius: 0.5rem;
+}
+
+.role-top-menu-student .role-nav-link {
+    color: #315b4d;
+}
+
+.role-top-menu-student .role-nav-link:hover,
+.role-top-menu-student .role-nav-link.active {
+    background: #dcefe6;
+    color: #21483b;
+}
+
+.role-top-menu-student .role-nav-link-logout {
+    color: #9e2b36;
+    border: 1px solid #e1a5ac;
+    background: #fff5f6;
+}
+
+.role-top-menu-student .role-nav-link-logout:hover {
+    background: #ffe9eb;
 }
 
 .main-card {
@@ -112,19 +169,29 @@ p, span, label, a, li, td, th {
 }
 
 .admin-shell {
-    display: grid;
-    grid-template-columns: 270px 1fr;
-    gap: 1.5rem;
-    align-items: start;
+    display: block;
+}
+
+.admin-main {
+    min-width: 0;
+    padding-right: 286px;
 }
 
 .admin-sidebar {
     background: #f4f8ff;
     border: 1px solid #cfdcf0;
-    border-radius: 1rem;
+    border-radius: 0;
     padding: 1.25rem 1rem;
-    position: sticky;
-    top: 5.5rem;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 270px;
+    height: 100vh;
+    z-index: 1045;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    box-shadow: -6px 0 18px rgba(21, 49, 89, 0.08);
 }
 
 .admin-sidebar h4 {
@@ -136,6 +203,8 @@ p, span, label, a, li, td, th {
 .admin-nav {
     display: grid;
     gap: 0.45rem;
+    align-content: start;
+    flex: 1 1 auto;
 }
 
 .admin-nav a {
@@ -149,6 +218,14 @@ p, span, label, a, li, td, th {
 .admin-nav a:hover,
 .admin-nav a.active {
     background: #e4edfb;
+}
+
+.admin-logout {
+    margin-top: auto;
+}
+
+.admin-welcome-title {
+    color: #0b2f74;
 }
 
 .section-card {
@@ -260,9 +337,9 @@ p, span, label, a, li, td, th {
 }
 
 .flash-success { background: #e8f9ee; border-color: #7acc98; color: #1f6a3f; }
-.flash-danger { background: #e8f9ee; border-color: #7acc98; color: #1f6a3f; }
-.flash-warning { background: #e8f9ee; border-color: #7acc98; color: #1f6a3f; }
-.flash-info { background: #e8f9ee; border-color: #7acc98; color: #1f6a3f; }
+.flash-danger { background: #fdeff1; border-color: #ebb2bb; color: #8c2735; }
+.flash-warning { background: #fdeff1; border-color: #ebb2bb; color: #8c2735; }
+.flash-info { background: #e8f1ff; border-color: #b7d0f6; color: #245ea8; }
 
 .flash-message {
     font-weight: 600;
@@ -340,16 +417,29 @@ p, span, label, a, li, td, th {
 }
 
 @media (max-width: 992px) {
-    .admin-shell {
-        grid-template-columns: 1fr;
-    }
-
     .admin-sidebar {
         position: static;
+        width: auto;
+        height: auto;
+        z-index: auto;
+        min-height: 0;
+        border-radius: 1rem;
+        box-shadow: none;
+        margin-bottom: 0.9rem;
+    }
+
+    .admin-main {
+        padding-right: 0;
     }
 
     .summary-grid {
         grid-template-columns: repeat(2, minmax(120px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .role-top-menu {
+        justify-content: flex-start;
     }
 }
 
@@ -466,6 +556,46 @@ p, span, label, a, li, td, th {
     color: #618873 !important;
 }
 
+.student-page-shell .student-action-btn {
+    --bs-btn-bg: #1f6a3f;
+    --bs-btn-border-color: #1f6a3f;
+    --bs-btn-color: #ffffff;
+    --bs-btn-hover-bg: #175131;
+    --bs-btn-hover-border-color: #175131;
+    --bs-btn-active-bg: #123f27;
+    --bs-btn-active-border-color: #123f27;
+}
+
+.student-drives-table {
+    font-size: 0.84rem;
+    min-width: 1520px;
+}
+
+.student-drives-table th,
+.student-drives-table td {
+    padding: 0.38rem 0.44rem;
+    vertical-align: top;
+}
+
+.student-drives-table .student-drive-description {
+    min-width: 280px;
+    max-width: 380px;
+}
+
+.admin-compact-table {
+    font-size: 0.86rem;
+}
+
+.admin-compact-table thead th {
+    font-size: 0.8rem;
+    letter-spacing: 0.01em;
+}
+
+.admin-compact-table th,
+.admin-compact-table td {
+    padding: 0.34rem 0.42rem;
+}
+
 @media (max-width: 992px) {
     .student-topbar {
         align-items: flex-start;
@@ -477,40 +607,53 @@ p, span, label, a, li, td, th {
 }
 
 .company-page-shell {
-    display: grid;
-    gap: 1rem;
+    display: block;
 }
 
-.company-topbar {
+.company-main {
+    min-width: 0;
+    padding-right: 286px;
+}
+
+.company-sidebar {
     background: #fff6ef;
     border: 1px solid #ffd3b3;
-    border-radius: 0.9rem;
-    padding: 0.85rem 1rem;
+    border-radius: 0;
+    padding: 1.25rem 1rem;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 270px;
+    height: 100vh;
+    z-index: 1045;
     display: flex;
-    gap: 1rem;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    flex-direction: column;
+    min-height: 100vh;
+    box-shadow: -6px 0 18px rgba(160, 86, 36, 0.12);
 }
 
-.company-topbar-title {
+.company-sidebar-title {
     font-weight: 800;
     color: #b05a22;
-    font-size: 1.2rem;
+    font-size: 1.55rem;
+    margin-bottom: 1.25rem;
+    white-space: nowrap;
+    line-height: 1.1;
 }
 
 .company-menu {
-    display: flex;
-    gap: 0.4rem;
-    flex-wrap: wrap;
+    display: grid;
+    gap: 0.45rem;
+    align-content: start;
+    flex: 1 1 auto;
 }
 
 .company-menu a {
     text-decoration: none;
     font-weight: 700;
     color: #7c4a28;
-    padding: 0.45rem 0.7rem;
-    border-radius: 0.55rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.65rem;
 }
 
 .company-menu a:hover,
@@ -519,8 +662,46 @@ p, span, label, a, li, td, th {
     color: #643210;
 }
 
+.company-logout {
+    margin-top: auto;
+}
+
+.company-page-shell .company-action-btn {
+    --bs-btn-bg: #b35a1e;
+    --bs-btn-border-color: #b35a1e;
+    --bs-btn-color: #ffffff;
+    --bs-btn-hover-bg: #974816;
+    --bs-btn-hover-border-color: #974816;
+    --bs-btn-active-bg: #813d12;
+    --bs-btn-active-border-color: #813d12;
+}
+
 .company-content-wrap {
     min-width: 0;
+}
+
+.company-page-shell {
+    font-size: 0.92rem;
+}
+
+.company-page-shell h2 {
+    font-size: 1.85rem;
+}
+
+.company-page-shell h4 {
+    font-size: 1.5rem;
+}
+
+.company-page-shell h5 {
+    font-size: 1.22rem;
+}
+
+.company-page-shell .table {
+    font-size: 0.9rem;
+}
+
+.company-page-shell .btn {
+    font-size: 0.88rem;
 }
 
 .company-hero-card {
@@ -585,6 +766,20 @@ p, span, label, a, li, td, th {
     color: #8e6b53 !important;
 }
 
+.company-page-shell .company-student-link {
+    color: #7c4a28;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.company-page-shell .company-student-link:hover,
+.company-page-shell .company-student-link:focus {
+    color: #643210;
+    text-decoration: underline;
+    text-decoration-color: #c78b62;
+    text-underline-offset: 0.12em;
+}
+
 /* Light-mode global refinements */
 .main-card,
 .section-card {
@@ -637,9 +832,26 @@ p, span, label, a, li, td, th {
     border-color: #cfd6e0;
 }
 
+.badge-status-placed-elsewhere {
+    background: #eef1f4;
+    color: #5d6672;
+    border-color: #c6ced8;
+}
+
 @media (max-width: 992px) {
-    .company-topbar {
-        align-items: flex-start;
+    .company-sidebar {
+        position: static;
+        width: auto;
+        height: auto;
+        z-index: auto;
+        min-height: 0;
+        border-radius: 1rem;
+        box-shadow: none;
+        margin-bottom: 0.9rem;
+    }
+
+    .company-main {
+        padding-right: 0;
     }
 
     .company-details-grid {

@@ -1,0 +1,45 @@
+{% extends "admin_base.html" %}
+{% block admin_title %}Company Approval Details{% endblock %}
+
+{% block admin_page_content %}
+<section class="card section-card">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h5 class="fw-bold mb-0">Company Approval Details</h5>
+            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.admin_company_approvals') }}">Back to Companies</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm align-middle admin-compact-table mb-3">
+                <tbody>
+                    <tr><th style="width: 220px;">Company Name</th><td>{{ company_profile.company_name }}</td></tr>
+                    <tr><th>Account Email</th><td>{{ company_user.email_address }}</td></tr>
+                    <tr><th>Website</th><td>{{ company_profile.website or "-" }}</td></tr>
+                    <tr><th>Industry</th><td>{{ company_profile.industry or "-" }}</td></tr>
+                    <tr><th>Headquarters</th><td>{{ company_profile.headquarters or "-" }}</td></tr>
+                    <tr><th>Address</th><td>{{ company_user.address or "-" }}</td></tr>
+                    <tr><th>HR Name</th><td>{{ company_profile.hr_name or "-" }}</td></tr>
+                    <tr><th>HR Email</th><td>{{ company_profile.hr_email or "-" }}</td></tr>
+                    <tr><th>HR Phone</th><td>{{ company_profile.hr_phone or "-" }}</td></tr>
+                    <tr><th>Account Status</th><td>{{ "Approved" if company_user.is_approved else "Pending" }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        {% if not company_user.is_approved %}
+        <div class="d-flex flex-wrap gap-2">
+            <form method="post" action="{{ url_for('main.admin_company_approval', user_id=company_user.user_id) }}">
+                <input type="hidden" name="action" value="approve">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button class="btn btn-success btn-sm" type="submit">Approve</button>
+            </form>
+            <form method="post" action="{{ url_for('main.admin_company_approval', user_id=company_user.user_id) }}">
+                <input type="hidden" name="action" value="reject">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button class="btn btn-outline-danger btn-sm" type="submit">Reject</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -6,7 +6,7 @@
     <div class="card-body">
         <h5 class="fw-bold mb-3">All Placement Drives</h5>
         <div class="table-responsive">
-            <table class="table table-sm align-middle">
+            <table class="table table-sm align-middle admin-compact-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -14,6 +14,7 @@
                         <th>Company</th>
                         <th>Status</th>
                         <th>Deadline</th>
+                        <th>Details</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -22,11 +23,28 @@
                         <td>{{ drive.job_id }}</td>
                         <td>{{ drive.title }}</td>
                         <td>{{ drive.company.company_name }}</td>
-                        <td>{{ drive.status }}</td>
+                        <td>
+                            {% if drive.status == "pending" %}
+                            <span class="fw-semibold text-warning">Pending</span>
+                            {% elif drive.status == "approved" %}
+                            <span class="fw-semibold text-success">Approved</span>
+                            {% elif drive.status == "rejected" %}
+                            <span class="fw-semibold text-danger">Rejected</span>
+                            {% elif drive.status == "closed" %}
+                            <span class="fw-semibold text-secondary">Closed</span>
+                            {% else %}
+                            <span class="fw-semibold">{{ drive.status|capitalize }}</span>
+                            {% endif %}
+                        </td>
                         <td>{{ drive.application_deadline or "-" }}</td>
+                        <td>
+                            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.admin_drive_detail', job_id=drive.job_id) }}">
+                                View
+                            </a>
+                        </td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="5" class="text-secondary">No drives found.</td></tr>
+                    <tr><td colspan="7" class="text-secondary">No drives found.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

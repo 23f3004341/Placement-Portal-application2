@@ -24,6 +24,11 @@
                             {% for error in form.email_address.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                         <div class="col-md-6">
+                            {{ form.website.label(class="form-label required-label") }}
+                            {{ form.website(class="form-control", placeholder="https://www.company.com") }}
+                            {% for error in form.website.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
                             {{ form.password.label(class="form-label required-label") }}
                             <div class="position-relative">
                                 {{ form.password(class="form-control pe-5", id="password", placeholder="Create a password") }}
@@ -38,11 +43,6 @@
                                 <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-secondary" role="button" aria-label="Toggle confirm password visibility" data-password-toggle="confirm_password"></i>
                             </div>
                             {% for error in form.confirm_password.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
-                        </div>
-                        <div class="col-md-6">
-                            {{ form.contact_number.label(class="form-label required-label") }}
-                            {{ form.contact_number(class="form-control", placeholder="Official contact number", inputmode="numeric", pattern="\\d{10}", maxlength="10") }}
-                            {% for error in form.contact_number.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                     </div>
 
@@ -88,17 +88,14 @@
                     <h6 class="text-uppercase text-secondary mb-3">Company Details</h6>
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            {{ form.website.label(class="form-label") }}
-                            {{ form.website(class="form-control", placeholder="https://www.company.com") }}
-                            {% for error in form.website.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
-                        </div>
-                        <div class="col-md-6">
-                            {{ form.industry.label(class="form-label") }}
+                            {{ form.industry.label(class="form-label required-label") }}
                             {{ form.industry(class="form-control", placeholder="Industry") }}
+                            {% for error in form.industry.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                         <div class="col-md-6">
-                            {{ form.headquarters.label(class="form-label") }}
+                            {{ form.headquarters.label(class="form-label required-label") }}
                             {{ form.headquarters(class="form-control", placeholder="Headquarters location") }}
+                            {% for error in form.headquarters.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                         <div class="col-md-6">
                             {{ form.hr_name.label(class="form-label required-label") }}
@@ -112,7 +109,7 @@
                         </div>
                         <div class="col-md-3">
                             {{ form.hr_phone.label(class="form-label required-label") }}
-                            {{ form.hr_phone(class="form-control", placeholder="10-digit HR number", inputmode="numeric", pattern="\\d{10}", maxlength="10") }}
+                            {{ form.hr_phone(class="form-control digits-only", placeholder="10-digit HR number", inputmode="numeric", pattern="\\d{10}", maxlength="10") }}
                             {% for error in form.hr_phone.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                         <div class="col-12">

@@ -23,25 +23,45 @@
                 </thead>
                 <tbody>
                     {% for app in applications %}
+                    {% set selected_elsewhere = app.student_id in company_selected_student_ids and app.status != 'selected' %}
+                    {% set disable_shortlist_select = selected_elsewhere or app.status in ['selected', 'rejected'] %}
+                    {% set status_label = 'Already placed at a different role' if selected_elsewhere else app.status|capitalize %}
+                    {% set status_class = 'badge-status-placed-elsewhere' if selected_elsewhere else 'badge-status-' ~ app.status|lower %}
                     <tr>
                         <td>{{ app.application_id }}</td>
-                        <td>{{ app.student.user.user_name }}</td>
+                        <td>
+                            <a class="company-student-link" href="{{ url_for('main.company_student_profile_view', student_id=app.student_id) }}">
+                                {{ app.student.user.user_name }}
+                            </a>
+                        </td>
                         <td>{{ app.student.roll_number }}</td>
                         <td>{{ app.student.course }}</td>
                         <td>{{ app.student.cgpa or "-" }}</td>
-                        <td><span class="badge status-badge badge-status-{{ app.status|lower }}">{{ app.status|capitalize }}</span></td>
+                        <td><span class="badge status-badge {{ status_class }}">{{ status_label }}</span></td>
                         <td class="d-flex flex-wrap gap-2">
                             <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
                                 <input type="hidden" name="action" value="shortlisted">
-                                <button class="btn btn-outline-primary btn-sm" type="submit">Shortlist</button>
+                                <button
+                                    class="btn btn-outline-primary btn-sm"
+                                    type="submit"
+                                    {% if disable_shortlist_select %}disabled{% endif %}
+                                >
+                                    Shortlist
+                                </button>
                             </form>
                             <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
                                 <input type="hidden" name="action" value="selected">
-                                <button class="btn btn-outline-success btn-sm" type="submit">Select</button>
+                                <button
+                                    class="btn btn-outline-success btn-sm"
+                                    type="submit"
+                                    {% if disable_shortlist_select %}disabled{% endif %}
+                                >
+                                    Select
+                                </button>
                             </form>
                             <form method="post" action="{{ url_for('main.company_update_application_status', application_id=app.application_id) }}">
                                 <input type="hidden" name="action" value="rejected">
-                                <button class="btn btn-outline-danger btn-sm" type="submit">Reject</button>
+                                <button class="btn btn-outline-danger btn-sm" type="submit" {% if selected_elsewhere or app.status == 'rejected' %}disabled{% endif %}>Reject</button>
                             </form>
                         </td>
                     </tr>

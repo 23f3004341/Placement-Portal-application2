@@ -6,12 +6,15 @@
     <div class="card-body">
         <h5 class="fw-bold mb-3">Past Placement History</h5>
         <div class="table-responsive">
-            <table class="table table-sm align-middle">
+            <table class="table table-sm align-middle student-drives-table">
                 <thead>
                     <tr>
-                        <th>Placement ID</th>
+                        <th>S.No.</th>
                         <th>Drive</th>
                         <th>Company</th>
+                        <th>Type</th>
+                        <th>Location</th>
+                        <th>Job Description</th>
                         <th>Package (LPA)</th>
                         <th>Offer Date</th>
                         <th>Status</th>
@@ -20,15 +23,18 @@
                 <tbody>
                     {% for placement in placements %}
                     <tr>
-                        <td>{{ placement.placement_id }}</td>
+                        <td>{{ loop.index }}</td>
                         <td>{{ placement.job_position.title }}</td>
                         <td>{{ placement.company.company_name }}</td>
+                        <td>{{ placement.job_position.job_type|replace('-', ' ')|title }}</td>
+                        <td>{{ placement.job_position.location or "-" }}</td>
+                        <td class="text-wrap student-drive-description">{{ placement.job_position.description or "-" }}</td>
                         <td>{{ placement.offered_package_lpa or "-" }}</td>
                         <td>{{ placement.offer_date or "-" }}</td>
                         <td><span class="badge text-bg-success">{{ placement.placement_status|capitalize }}</span></td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="6" class="text-secondary">No placement history available yet.</td></tr>
+                    <tr><td colspan="9" class="text-secondary">No placement history available yet.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

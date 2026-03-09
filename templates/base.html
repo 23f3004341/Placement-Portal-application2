@@ -12,7 +12,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+{% set is_dashboard_page = current_user.is_authenticated and request.path.startswith('/dashboard/') %}
+{% set role_theme_class = 'theme-default' %}
+{% if is_dashboard_page and current_user.user_role == 'admin' %}
+{% set role_theme_class = 'theme-admin' %}
+{% elif is_dashboard_page and current_user.user_role == 'company' %}
+{% set role_theme_class = 'theme-company' %}
+{% elif is_dashboard_page and current_user.user_role == 'student' %}
+{% set role_theme_class = 'theme-student' %}
+{% endif %}
+<body class="{{ role_theme_class }}">
     <nav class="navbar navbar-expand-lg app-navbar sticky-top">
         <div class="container container-app">
             <a class="navbar-brand app-brand" href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.home') }}">
@@ -20,7 +29,19 @@
             </a>
             <div class="d-flex gap-2">
                 {% if current_user.is_authenticated %}
+                {% set use_sidebar_logout = (current_user.user_role == 'admin' and request.path.startswith('/dashboard/admin')) or (current_user.user_role == 'company' and request.path.startswith('/dashboard/company')) %}
+                {% set student_dashboard_nav = current_user.user_role == 'student' and request.path.startswith('/dashboard/student') %}
+                {% if student_dashboard_nav %}
+                <nav class="role-top-menu role-top-menu-student">
+                    <a class="role-nav-link {% if request.path == url_for('main.student_dashboard') %}active{% endif %}" href="{{ url_for('main.student_dashboard') }}">Dashboard</a>
+                    <a class="role-nav-link {% if request.path.startswith('/dashboard/student/drives') %}active{% endif %}" href="{{ url_for('main.student_drives') }}">Approved Drives</a>
+                    <a class="role-nav-link {% if request.path.startswith('/dashboard/student/applications') or request.path.startswith('/dashboard/student/history') %}active{% endif %}" href="{{ url_for('main.student_applications') }}">Applications and Placements</a>
+                    <a class="role-nav-link {% if request.path.startswith('/dashboard/student/profile') %}active{% endif %}" href="{{ url_for('main.student_profile') }}">My Profile</a>
+                    <a class="role-nav-link role-nav-link-logout" href="{{ url_for('main.logout') }}">Logout</a>
+                </nav>
+                {% elif not use_sidebar_logout %}
                 <a class="btn btn-outline-danger btn-sm px-3" href="{{ url_for('main.logout') }}">Logout</a>
+                {% endif %}
                 {% else %}
                 <div class="dropdown">
                     <button class="btn btn-outline-primary btn-sm dropdown-toggle px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -47,7 +68,9 @@
     </nav>
 
     <main class="py-4 py-md-5">
-        <div class="container container-app">
+        {% set sidebar_layout = current_user.is_authenticated and ((current_user.user_role == 'admin' and request.path.startswith('/dashboard/admin')) or (current_user.user_role == 'company' and request.path.startswith('/dashboard/company'))) %}
+        {% set student_wide_layout = current_user.is_authenticated and current_user.user_role == 'student' and (request.path.startswith('/dashboard/student/drives') or request.path.startswith('/dashboard/student/applications') or request.path.startswith('/dashboard/student/history')) %}
+        <div class="{% if sidebar_layout %}container-fluid ps-4 pe-0{% elif student_wide_layout %}container-fluid px-4{% else %}container container-app{% endif %}">
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             <div class="flash-stack">
@@ -83,6 +106,12 @@
         });
 
         document.addEventListener("input", (event) => {
+            const digitsOnlyInput = event.target.closest(".digits-only");
+            if (digitsOnlyInput) {
+                digitsOnlyInput.value = digitsOnlyInput.value.replace(/\D/g, "");
+                return;
+            }
+
             const pincodeInput = event.target.closest(".pincode-autofill");
             if (!pincodeInput) return;
             pincodeInput.value = pincodeInput.value.replace(/\D/g, "").slice(0, 6);
@@ -114,6 +143,7 @@
                 // Ignore lookup errors and leave fields unchanged.
             }
         }, true);
+
     </script>
 </body>
 </html>

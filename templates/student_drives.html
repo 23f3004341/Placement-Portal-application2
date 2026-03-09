@@ -6,29 +6,61 @@
     <div class="card-body">
         <h5 class="fw-bold mb-3">Approved Placement Drives</h5>
         <div class="table-responsive">
-            <table class="table table-sm align-middle">
+            <table class="table table-sm align-middle student-drives-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>S.No.</th>
                         <th>Title</th>
                         <th>Company</th>
+                        <th>Type</th>
                         <th>Location</th>
-                        <th>Deadline</th>
+                        <th>Min CGPA</th>
+                        <th>Salary/Stipend</th>
                         <th>Action</th>
+                        <th>Eligible Degrees</th>
+                        <th>Eligible Branches</th>
+                        <th>Job Description</th>
+                        <th>Deadline</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for drive in drives %}
                     <tr>
-                        <td>{{ drive.job_id }}</td>
+                        <td>{{ loop.index }}</td>
                         <td>{{ drive.title }}</td>
                         <td>{{ drive.company.company_name }}</td>
+                        <td>{{ drive.job_type|replace('-', ' ')|title }}</td>
                         <td>{{ drive.location or "-" }}</td>
-                        <td>{{ drive.application_deadline or "-" }}</td>
+                        <td>{{ drive.min_cgpa if drive.min_cgpa is not none else "-" }}</td>
                         <td>
+                            {% if drive.salary_lpa is not none %}
+                                {{ drive.salary_lpa }} {{ "K/month" if drive.salary_unit == "k_month" else "LPA" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set app_meta = application_meta_by_job.get(drive.job_id) %}
                             {% set deadline_passed = drive.application_deadline and drive.application_deadline < today %}
-                            {% if drive.job_id in applied_job_ids %}
-                            <span class="badge text-bg-success">Applied</span>
+                            {% if app_meta and app_meta.status == 'applied' %}
+                            <div class="d-flex flex-column gap-1 align-items-start">
+                                <span class="badge text-bg-success">Applied</span>
+                                <form method="post" action="{{ url_for('main.student_withdraw_application', application_id=app_meta.application_id) }}">
+                                    <input type="hidden" name="next" value="{{ request.full_path }}">
+                                    <button class="btn btn-outline-danger btn-sm" type="submit">Undo</button>
+                                </form>
+                            </div>
+                            {% elif app_meta and app_meta.status == 'withdrawn' %}
+                            <div class="d-flex flex-column gap-1 align-items-start">
+                                <span class="badge text-bg-secondary">Withdrawn</span>
+                                <form method="post" action="{{ url_for('main.student_apply_drive', job_id=drive.job_id) }}">
+                                    <button class="btn btn-primary btn-sm" type="submit">Apply</button>
+                                </form>
+                            </div>
+                            {% elif app_meta and app_meta.status in ['shortlisted', 'selected', 'rejected'] %}
+                            <span class="badge {% if app_meta.status == 'selected' %}text-bg-success{% elif app_meta.status == 'shortlisted' %}text-bg-warning{% else %}text-bg-danger{% endif %}">
+                                {{ app_meta.status|capitalize }}
+                            </span>
                             {% elif deadline_passed %}
                             <span class="badge text-bg-danger">Closed</span>
                             {% else %}
@@ -37,9 +69,29 @@
                             </form>
                             {% endif %}
                         </td>
+                        <td class="text-wrap">
+                            {% if drive.eligible_degrees %}
+                                {% for degree in drive.eligible_degrees.split(',') %}
+                                <div>{{ degree.strip() }}</div>
+                                {% endfor %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="text-wrap">
+                            {% if drive.eligible_branches %}
+                                {% for branch in drive.eligible_branches.split(',') %}
+                                <div>{{ branch.strip() }}</div>
+                                {% endfor %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="text-wrap student-drive-description">{{ drive.description or "-" }}</td>
+                        <td>{{ drive.application_deadline or "-" }}</td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="6" class="text-secondary">No approved drives are available right now.</td></tr>
+                    <tr><td colspan="12" class="text-secondary">No approved drives are available right now.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

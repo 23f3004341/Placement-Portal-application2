@@ -7,9 +7,9 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <h5 class="fw-bold mb-0">Created Placement Drives</h5>
             {% if current_user.is_approved %}
-            <a class="btn btn-primary btn-sm" href="{{ url_for('main.company_create_drive') }}">Create Drive</a>
+            <a class="btn btn-primary btn-sm company-action-btn" href="{{ url_for('main.company_create_drive') }}">Create Drive</a>
             {% else %}
-            <button class="btn btn-primary btn-sm" type="button" disabled>Create Drive</button>
+            <button class="btn btn-primary btn-sm company-action-btn" type="button" disabled>Create Drive</button>
             {% endif %}
         </div>
 
@@ -23,7 +23,7 @@
             <table class="table table-sm align-middle">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Drive No.</th>
                         <th>Title</th>
                         <th>Status</th>
                         <th>Deadline</th>
@@ -34,7 +34,7 @@
                 <tbody>
                     {% for drive in drives %}
                     <tr>
-                        <td>{{ drive.job_id }}</td>
+                        <td title="Global ID: {{ drive.job_id }}">{{ loop.index }}</td>
                         <td>{{ drive.title }}</td>
                         <td>{{ drive.status }}</td>
                         <td>{{ drive.application_deadline or "-" }}</td>

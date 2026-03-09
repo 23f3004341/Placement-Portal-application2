@@ -3,17 +3,6 @@
 
 {% block content %}
 <section class="student-page-shell">
-    <div class="student-topbar">
-        <div class="student-topbar-title">Student Portal</div>
-        <nav class="student-menu">
-            <a class="{% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('main.student_dashboard') }}">Dashboard</a>
-            <a class="{% if active_page == 'drives' %}active{% endif %}" href="{{ url_for('main.student_drives') }}">Approved Drives</a>
-            <a class="{% if active_page == 'applications' %}active{% endif %}" href="{{ url_for('main.student_applications') }}">My Applications</a>
-            <a class="{% if active_page == 'history' %}active{% endif %}" href="{{ url_for('main.student_history') }}">Placement History</a>
-            <a class="{% if active_page == 'profile' %}active{% endif %}" href="{{ url_for('main.student_profile') }}">My Profile</a>
-        </nav>
-    </div>
-
     <div class="student-content-wrap d-grid gap-3">
         {% block student_page_content %}{% endblock %}
     </div>

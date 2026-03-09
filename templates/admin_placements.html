@@ -6,10 +6,10 @@
     <div class="card-body">
         <h5 class="fw-bold mb-3">All Historical Placements</h5>
         <div class="table-responsive">
-            <table class="table table-sm align-middle">
+            <table class="table table-sm align-middle admin-compact-table">
                 <thead>
                     <tr>
-                        <th>Placement ID</th>
+                        <th>S.No.</th>
                         <th>Student</th>
                         <th>Roll No.</th>
                         <th>Company</th>
@@ -22,7 +22,7 @@
                 <tbody>
                     {% for placement in placements %}
                     <tr>
-                        <td>{{ placement.placement_id }}</td>
+                        <td>{{ loop.index }}</td>
                         <td>{{ placement.student.user.user_name }}</td>
                         <td>{{ placement.student.roll_number }}</td>
                         <td>{{ placement.company.company_name }}</td>

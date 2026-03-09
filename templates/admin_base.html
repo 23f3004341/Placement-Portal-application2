@@ -3,21 +3,7 @@
 
 {% block content %}
 <div class="admin-shell">
-    <aside class="admin-sidebar">
-        <h4>Placement Admin</h4>
-        <nav class="admin-nav">
-            <a class="{% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('main.admin_dashboard') }}">Dashboard</a>
-            <a class="{% if active_page == 'company_approvals' %}active{% endif %}" href="{{ url_for('main.admin_company_approvals') }}">Company Approvals</a>
-            <a class="{% if active_page == 'drive_approvals' %}active{% endif %}" href="{{ url_for('main.admin_drive_approvals') }}">Drive Approvals</a>
-            <a class="{% if active_page == 'all_drives' %}active{% endif %}" href="{{ url_for('main.admin_all_drives') }}">All Placement Drives</a>
-            <a class="{% if active_page == 'all_applications' %}active{% endif %}" href="{{ url_for('main.admin_all_applications') }}">All Applications</a>
-            <a class="{% if active_page == 'all_placements' %}active{% endif %}" href="{{ url_for('main.admin_all_placements') }}">Placement History</a>
-            <a class="{% if active_page == 'search_students' %}active{% endif %}" href="{{ url_for('main.admin_student_search') }}">Search Students</a>
-            <a class="{% if active_page == 'search_companies' %}active{% endif %}" href="{{ url_for('main.admin_company_search') }}">Search Companies</a>
-        </nav>
-    </aside>
-
-    <div class="d-grid gap-3">
+    <div class="admin-main d-grid gap-3">
         <div class="summary-grid">
             <div class="summary-item">
                 <div class="label">Students</div>
@@ -38,5 +24,17 @@
         </div>
         {% block admin_page_content %}{% endblock %}
     </div>
+
+    <aside class="admin-sidebar">
+        <h4>Placement Admin</h4>
+        <nav class="admin-nav">
+            <a class="{% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('main.admin_dashboard') }}">Dashboard</a>
+            <a class="{% if active_page == 'company_approvals' %}active{% endif %}" href="{{ url_for('main.admin_company_approvals') }}">Companies</a>
+            <a class="{% if active_page == 'all_drives' %}active{% endif %}" href="{{ url_for('main.admin_all_drives') }}">All Placement Drives</a>
+            <a class="{% if active_page == 'applications_placements' %}active{% endif %}" href="{{ url_for('main.admin_all_applications') }}">Applications and Placements</a>
+            <a class="{% if active_page == 'search_students' %}active{% endif %}" href="{{ url_for('main.admin_student_search') }}">Search Students</a>
+        </nav>
+        <a class="btn btn-outline-danger btn-sm w-100 admin-logout" href="{{ url_for('main.logout') }}">Logout</a>
+    </aside>
 </div>
 {% endblock %}

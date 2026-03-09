@@ -1,41 +1,113 @@
 {% extends "admin_base.html" %}
-{% block admin_title %}Company Approvals{% endblock %}
+{% block admin_title %}Companies{% endblock %}
 
 {% block admin_page_content %}
 <section class="card section-card">
     <div class="card-body">
-        <h5 class="fw-bold mb-3">Pending Company Registrations</h5>
+        <h5 class="fw-bold mb-3">Pending Company Approvals</h5>
         <div class="table-responsive">
-            <table class="table table-sm align-middle">
+            <table class="table table-sm align-middle admin-compact-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Contact</th>
-                        <th>Action</th>
+                        <th>Company Name</th>
+                        <th>Industry</th>
+                        <th>Headquarters</th>
+                        <th>HR Name</th>
+                        <th>HR Email ID</th>
+                        <th>HR Contact</th>
+                        <th>Details</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for user in pending_company_users %}
+                    {% for company in pending_companies %}
                     <tr>
-                        <td>{{ user.user_name }}</td>
-                        <td>{{ user.email_address }}</td>
-                        <td>{{ user.contact_number or "-" }}</td>
+                        <td>{{ company.company_name }}</td>
+                        <td>{{ company.industry or "-" }}</td>
+                        <td>{{ company.headquarters or "-" }}</td>
+                        <td>{{ company.hr_name or "-" }}</td>
+                        <td>{{ company.hr_email or "-" }}</td>
+                        <td>{{ company.hr_phone or "-" }}</td>
+                        <td>
+                            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.admin_company_approval_detail', user_id=company.user_id) }}">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="text-secondary">No pending company approvals.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="card section-card">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">All Companies</h5>
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-8">
+                <input class="form-control" type="text" name="company_q" value="{{ company_query }}" placeholder="Search by company name">
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button class="btn btn-primary w-100" type="submit">Search</button>
+                <a class="btn btn-outline-secondary" href="{{ url_for('main.admin_company_approvals') }}">Clear</a>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle admin-compact-table">
+                <thead>
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Industry</th>
+                        <th>Headquarters</th>
+                        <th>HR Name</th>
+                        <th>HR Email ID</th>
+                        <th>HR Contact</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for company in reviewed_companies %}
+                    <tr>
+                        <td>{{ company.company_name }}</td>
+                        <td>{{ company.industry or "-" }}</td>
+                        <td>{{ company.headquarters or "-" }}</td>
+                        <td>{{ company.hr_name or "-" }}</td>
+                        <td>{{ company.hr_email or "-" }}</td>
+                        <td>{{ company.hr_phone or "-" }}</td>
+                        <td>
+                            {% if company.user.is_approved %}
+                            <span class="badge text-bg-success">Approved</span>
+                            {% else %}
+                            <span class="badge text-bg-danger">Rejected</span>
+                            {% endif %}
+                        </td>
                         <td class="d-flex gap-2">
-                            <form method="post" action="{{ url_for('main.admin_company_approval', user_id=user.user_id) }}">
-                                <input type="hidden" name="action" value="approve">
+                            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.admin_company_approval_detail', user_id=company.user_id) }}">View</a>
+                            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.admin_edit_company', company_id=company.company_id) }}">Edit</a>
+                            {% if company.user.is_active %}
+                            <form method="post" action="{{ url_for('main.admin_user_status', user_id=company.user.user_id) }}">
+                                <input type="hidden" name="action" value="blacklist">
                                 <input type="hidden" name="next" value="{{ request.full_path }}">
-                                <button class="btn btn-success btn-sm" type="submit">Approve</button>
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Blacklist</button>
                             </form>
-                            <form method="post" action="{{ url_for('main.admin_company_approval', user_id=user.user_id) }}">
-                                <input type="hidden" name="action" value="reject">
+                            {% else %}
+                            <form method="post" action="{{ url_for('main.admin_user_status', user_id=company.user.user_id) }}">
+                                <input type="hidden" name="action" value="activate">
                                 <input type="hidden" name="next" value="{{ request.full_path }}">
-                                <button class="btn btn-outline-danger btn-sm" type="submit">Reject</button>
+                                <button class="btn btn-success btn-sm" type="submit">Unblacklist</button>
+                            </form>
+                            {% endif %}
+                            <form method="post" action="{{ url_for('main.admin_user_delete', user_id=company.user.user_id) }}" onsubmit="return confirm('Delete this company account permanently?');">
+                                <input type="hidden" name="next" value="{{ request.full_path }}">
+                                <button class="btn btn-danger btn-sm" type="submit">Delete</button>
                             </form>
                         </td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="4" class="text-secondary">No pending company approvals.</td></tr>
+                    <tr><td colspan="8" class="text-secondary">No approved/rejected companies found.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

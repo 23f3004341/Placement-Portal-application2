@@ -8,7 +8,7 @@
             <div class="card-body p-4 p-md-5">
                 <h3 class="fw-bold mb-4">Student Registration</h3>
                 <p class="text-secondary mb-4">Create your account to apply for approved placement drives.</p>
-                <form method="POST" novalidate>
+                <form method="POST" enctype="multipart/form-data" novalidate>
                     {{ form.hidden_tag() }}
 
                     <h6 class="text-uppercase text-secondary mb-3">Account Details</h6>
@@ -51,15 +51,16 @@
                         </div>
                         <div class="col-md-6">
                             {{ form.contact_number.label(class="form-label required-label") }}
-                            {{ form.contact_number(class="form-control", placeholder="10-digit mobile number", inputmode="numeric", pattern="\\d{10}", maxlength="10") }}
+                            {{ form.contact_number(class="form-control digits-only", placeholder="10-digit mobile number", inputmode="numeric", pattern="\\d{10}", maxlength="10") }}
                             {% for error in form.contact_number.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                         <div class="col-md-6">
-                            {{ form.gender.label(class="form-label") }}
+                            {{ form.gender.label(class="form-label required-label") }}
                             {{ form.gender(class="form-select") }}
+                            {% for error in form.gender.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                         <div class="col-md-6">
-                            {{ form.dob.label(class="form-label") }}
+                            {{ form.dob.label(class="form-label required-label") }}
                             {{ form.dob(class="form-control", placeholder="YYYY-MM-DD") }}
                             {% for error in form.dob.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
@@ -107,18 +108,13 @@
                     <h6 class="text-uppercase text-secondary mb-3">Academic Details</h6>
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            {{ form.roll_number.label(class="form-label required-label") }}
-                            {{ form.roll_number(class="form-control", placeholder="University roll number") }}
-                            {% for error in form.roll_number.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
-                        </div>
-                        <div class="col-md-6">
                             {{ form.course.label(class="form-label required-label") }}
-                            {{ form.course(class="form-control", placeholder="Course name") }}
+                            {{ form.course(class="form-select") }}
                             {% for error in form.course.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                         <div class="col-md-6">
                             {{ form.branch.label(class="form-label required-label") }}
-                            {{ form.branch(class="form-control", placeholder="Branch / specialization") }}
+                            {{ form.branch(class="form-select") }}
                             {% for error in form.branch.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                         <div class="col-md-3">
@@ -127,13 +123,15 @@
                             {% for error in form.graduation_year.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                         <div class="col-md-3">
-                            {{ form.cgpa.label(class="form-label") }}
+                            {{ form.cgpa.label(class="form-label required-label") }}
                             {{ form.cgpa(class="form-control", placeholder="0 - 10") }}
                             {% for error in form.cgpa.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                         <div class="col-12">
-                            {{ form.skills.label(class="form-label") }}
-                            {{ form.skills(class="form-control", rows="3", placeholder="Key skills (optional)") }}
+                            {{ form.resume.label(class="form-label required-label") }}
+                            {{ form.resume(class="form-control", accept=".pdf,.doc,.docx") }}
+                            <small class="text-secondary d-block mt-1">Accepted formats: PDF, DOC, DOCX</small>
+                            {% for error in form.resume.errors %}<small class="text-danger d-block">{{ error }}</small>{% endfor %}
                         </div>
                     </div>
 

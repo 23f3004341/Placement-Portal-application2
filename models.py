@@ -132,8 +132,10 @@ class JobPosition(db.Model):
     job_type = db.Column(db.String(40), nullable=False, default="full-time")
     location = db.Column(db.String(120))
     salary_lpa = db.Column(db.Float)
+    salary_unit = db.Column(db.String(20), nullable=False, default="lpa")
     openings = db.Column(db.Integer, nullable=False, default=1)
     min_cgpa = db.Column(db.Float)
+    eligible_degrees = db.Column(db.Text)
     eligible_branches = db.Column(db.Text)
     description = db.Column(db.Text)
     application_deadline = db.Column(db.Date)
@@ -216,3 +218,15 @@ class Placement(db.Model):
 
     def __repr__(self):
         return f"<Placement {self.placement_id} student={self.student_id} job={self.job_id}>"
+
+
+class AccountRestriction(db.Model):
+    __tablename__ = "account_restrictions"
+
+    restriction_id = db.Column(db.Integer, primary_key=True)
+    email_address = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    reason = db.Column(db.String(30), nullable=False, index=True)  # blacklisted | removed
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<AccountRestriction {self.email_address} {self.reason}>"
