@@ -16,7 +16,7 @@
                         <th>Drive</th>
                         <th>Status</th>
                         <th>Offer Date</th>
-                        <th>Package (LPA)</th>
+                        <th>Package</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -29,7 +29,13 @@
                         <td>{{ placement.job_position.title }}</td>
                         <td>{{ placement.placement_status|capitalize }}</td>
                         <td>{{ placement.offer_date or "-" }}</td>
-                        <td>{{ placement.offered_package_lpa or "-" }}</td>
+                        <td>
+                            {% if placement.offered_package_lpa is not none %}
+                                {{ placement.offered_package_lpa }} {{ "K/month" if placement.job_position.salary_unit == "k_month" else "LPA" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
                     </tr>
                     {% else %}
                     <tr><td colspan="8" class="text-secondary">No placement history available.</td></tr>
