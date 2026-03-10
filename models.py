@@ -131,6 +131,7 @@ class JobPosition(db.Model):
     job_type = db.Column(db.String(40), nullable=False, default="full-time")
     location = db.Column(db.String(120))
     salary_lpa = db.Column(db.Float)
+    salary_unit = db.Column(db.String(20), nullable=False, default="lpa")
     openings = db.Column(db.Integer, nullable=False, default=1)
     min_cgpa = db.Column(db.Float)
     eligible_degrees = db.Column(db.Text)
