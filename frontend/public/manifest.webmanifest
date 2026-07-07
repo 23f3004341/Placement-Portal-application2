@@ -1,0 +1,18 @@
+{
+  "name": "Northbridge Placement Portal",
+  "short_name": "Placement",
+  "description": "Placement drives, applications, interviews, reports, and analytics.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#1d4ed8",
+  "icons": [
+    {
+      "src": "/icons/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<body style="font-family: Arial, sans-serif; color: #1f2937;">
+    <h2 style="margin-bottom: 4px;">Monthly Placement Activity Report</h2>
+    {% if company %}<p><strong>{{ company.company_name }}</strong></p>{% endif %}
+    <p style="margin-top: 0;">{{ period_start.strftime("%B %d, %Y") }} to {{ period_end.strftime("%B %d, %Y") }}</p>
+    <table cellpadding="10" cellspacing="0" border="1" style="border-collapse: collapse; border-color: #d1d5db;">
+        <tr><th align="left">Drives conducted</th><td>{{ drives_conducted }}</td></tr>
+        <tr><th align="left">Students applied</th><td>{{ students_applied }}</td></tr>
+        <tr><th align="left">Students selected</th><td>{{ selected_count }}</td></tr>
+        <tr><th align="left">Placements created</th><td>{{ placements_created }}</td></tr>
+    </table>
+
+    <h3>Application Status Summary</h3>
+    <table cellpadding="8" cellspacing="0" border="1" style="border-collapse: collapse; border-color: #d1d5db;">
+        <thead>
+            <tr>
+                <th align="left">Status</th>
+                <th align="left">Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for status, count in status_counts.items() %}
+            <tr>
+                <td>{{ status|capitalize }}</td>
+                <td>{{ count }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="2">No applications recorded for this month.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p style="color: #6b7280; font-size: 13px;">Generated at {{ generated_at.strftime("%Y-%m-%d %H:%M UTC") }}.</p>
+</body>
+</html>

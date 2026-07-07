@@ -5,3 +5,8 @@ __pycache__/
 instance/
 .env
 data/.matplotlib/
+frontend/static/exports/
+frontend/dist/
+frontend/node_modules/
+frontend/.node_modules_corrupt_*/
+frontend/legacy_jinja_templates/

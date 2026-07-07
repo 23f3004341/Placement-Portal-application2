@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<body style="font-family: Arial, sans-serif; color: #1f2937;">
+    <h2>Upcoming interview reminder</h2>
+    <p>Hello {{ interview.application.student.user.user_name }},</p>
+    <p>Your interview for <strong>{{ interview.application.job_position.title }}</strong> at
+       <strong>{{ interview.application.job_position.company.company_name }}</strong> is scheduled for
+       <strong>{{ interview.scheduled_at.strftime("%B %d, %Y at %I:%M %p") }}</strong>.</p>
+    <table cellpadding="7" cellspacing="0" border="1" style="border-collapse: collapse; border-color: #d1d5db;">
+        <tr><th align="left">Mode</th><td>{{ interview.mode|capitalize }}</td></tr>
+        <tr><th align="left">Location / link</th><td>{{ interview.location_or_link or "To be shared" }}</td></tr>
+        <tr><th align="left">Notes</th><td>{{ interview.notes or "-" }}</td></tr>
+    </table>
+</body>
+</html>

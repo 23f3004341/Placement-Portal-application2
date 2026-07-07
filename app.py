@@ -1,6 +1,10 @@
-from init import create_app
+"""Root launcher kept for simple local runs and Celery imports."""
 
-app = create_app()
+import os
 
-if __name__ == '__main__':
-    app.run(debug=True)
+from backend.app import app, celery, celery_app
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", "5000"))
+    app.run(debug=True, port=port, use_reloader=False)
