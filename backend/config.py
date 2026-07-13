@@ -26,8 +26,6 @@ class Config:
         "DATABASE_URL",
         "sqlite:///" + os.path.join(BASE_DIR, db_filename),
     )
-    if SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
-        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql://", 1)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     RESUME_MAX_MB = int(os.environ.get("RESUME_MAX_MB", "2"))
@@ -59,7 +57,7 @@ class Config:
     # Deadline reminders run once every morning until the application deadline.
     DEADLINE_REMINDER_HOUR = int(os.environ.get("DEADLINE_REMINDER_HOUR", "9"))
     DEADLINE_REMINDER_MINUTE = int(os.environ.get("DEADLINE_REMINDER_MINUTE", "0"))
-    # Keep the admin report frequent for project demonstrations and proctor review.
+    # Keep the admin report frequent.
     ADMIN_REPORT_SECONDS = int(os.environ.get("ADMIN_REPORT_SECONDS", "120"))
     CELERY_TIMEZONE = os.environ.get("CELERY_TIMEZONE", "Asia/Kolkata")
     REMINDER_LOOKAHEAD_DAYS = int(os.environ.get("REMINDER_LOOKAHEAD_DAYS", "3"))

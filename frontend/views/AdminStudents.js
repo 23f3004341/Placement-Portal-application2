@@ -18,26 +18,26 @@ window.AdminStudentsView = `
           <table class="table table-hover align-middle mb-0">
             <thead>
               <tr>
-                <th>Student</th>
-                <th>Student ID</th>
-                <th>Course</th>
-                <th>Contact</th>
-                <th>Account</th>
-                <th>Actions</th>
+                <th class="p-3">Student</th>
+                <th class="p-3">Student ID</th>
+                <th class="p-3">Course</th>
+                <th class="p-3">Contact</th>
+                <th class="p-3">Account</th>
+                <th class="p-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="!students.length"><td colspan="6" class="text-center text-secondary py-5">No students found.</td></tr>
               <template v-for="s in students" :key="s.id">
               <tr>
-                <td><a href="#" class="link-dark fw-semibold" @click.prevent="viewAdminStudent(s)">{{ s.user.name }}</a></td>
-                <td>{{ s.roll_number }}</td>
-                <td>{{ s.course }} / {{ s.branch }}</td>
-                <td>{{ s.user.contact }}</td>
-                <td>
+                <td class="p-3"><a href="#" class="link-dark fw-semibold" @click.prevent="viewAdminStudent(s)">{{ s.user.name }}</a></td>
+                <td class="p-3">{{ s.roll_number }}</td>
+                <td class="p-3">{{ s.course }} / {{ s.branch }}</td>
+                <td class="p-3">{{ s.user.contact }}</td>
+                <td class="p-3">
                   <status-badge :value="s.user.active ? 'active' : 'inactive'"></status-badge>
                 </td>
-                <td class="d-flex flex-wrap gap-1">
+                <td class="p-3 d-flex flex-wrap gap-1">
                   <button
                     class="btn btn-sm btn-outline-secondary"
                     @click="startStudentEdit(s)"

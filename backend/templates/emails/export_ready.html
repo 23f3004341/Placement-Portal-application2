@@ -1,9 +1,0 @@
-<!doctype html>
-<html lang="en">
-<body style="font-family: Arial, sans-serif; color: #1f2937;">
-    <h2>Your CSV export is ready</h2>
-    <p>Hello {{ export_job.student.user.user_name }},</p>
-    <p>Your placement application history export has been generated. Open your student dashboard to download it.</p>
-    <p style="color: #6b7280; font-size: 13px;">Export #{{ export_job.export_id }} completed at {{ export_job.completed_at.strftime("%Y-%m-%d %H:%M UTC") }}.</p>
-</body>
-</html>

@@ -120,27 +120,27 @@ window.AdminCompaniesView = `
           <table class="table table-hover align-middle mb-0">
             <thead>
               <tr>
-                <th>Company</th>
-                <th>Industry</th>
-                <th>Approval</th>
-                <th>Account</th>
-                <th>Actions</th>
+                <th class="p-3">Company</th>
+                <th class="p-3">Industry</th>
+                <th class="p-3">Approval</th>
+                <th class="p-3">Account</th>
+                <th class="p-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="!companies.length"><td colspan="5" class="text-center text-secondary py-5">No companies found.</td></tr>
               <tr v-for="c in companies">
-                <td>
+                <td class="p-3">
                   {{ c.name }}<br /><small>{{ c.user.email }}</small>
                 </td>
-                <td>{{ c.industry || "-" }}</td>
-                <td>
+                <td class="p-3">{{ c.industry || "-" }}</td>
+                <td class="p-3">
                   <status-badge :value="companyApprovalLabel(c)"></status-badge>
                 </td>
-                <td>
+                <td class="p-3">
                   <status-badge :value="c.user.active ? 'active' : 'inactive'"></status-badge>
                 </td>
-                <td>
+                <td class="p-3">
                   <div class="d-flex flex-wrap gap-1">
                     <button
                       class="btn btn-sm btn-outline-secondary"

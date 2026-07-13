@@ -7,6 +7,7 @@ def company_dashboard():
     company = current_user.company_profile
     drives = JobPosition.query.filter_by(company_id=company.company_id).order_by(JobPosition.job_id.desc()).all()
     applications = Application.query.join(JobPosition).filter(JobPosition.company_id == company.company_id, Application.status != "withdrawn").all()
+    applicant_counts = Counter(application.job_id for application in applications)
     return api_ok({
         "company": company_json(company),
         "metrics": {
@@ -15,7 +16,10 @@ def company_dashboard():
             "students": len({application.student_id for application in applications}),
             "placed": sum(1 for a in applications if a.status == "placed"),
         },
-        "drives": [drive_json(drive) for drive in drives],
+        "drives": [
+            {**drive_json(drive), "applicants": applicant_counts.get(drive.job_id, 0)}
+            for drive in drives
+        ],
     })
 
 
