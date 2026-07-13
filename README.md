@@ -142,13 +142,6 @@ cd backend
 celery -A celery_app.celery beat --loglevel=info
 ```
 
-To run tests, use the project root folder, not the `backend` folder:
-
-```bash
-cd ..
-python3 -m unittest discover -s tests
-```
-
 ## 5) Database and Default Admin
 
 On startup, the app:
