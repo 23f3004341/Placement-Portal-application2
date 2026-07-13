@@ -1,13 +1,13 @@
 window.CompanyApplicationsView = `
       <section v-else-if="page === 'company-applications'">
         <h1 class="h3 mb-3">Applicants</h1>
-        <div class="row g-3">
-          <div v-if="!applications.length" class="col-12"><div class="card border-0 shadow-sm"><div class="card-body text-center text-secondary py-5"><h2 class="h5 text-body">No applicants yet</h2><p class="mb-0">Applications will appear here when students apply to your positions.</p></div></div></div>
-          <div v-for="a in applications" :key="a.id" class="col-12">
-            <div class="card border-0 shadow-sm">
-              <div class="card-body">
-                <div class="row g-3">
-                  <div class="col-lg-3">
+        <div class="table-responsive card border-0 shadow-sm rounded-4 overflow-hidden">
+          <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Student</th><th>Position & status</th><th>Decision & feedback</th><th>Interview</th></tr></thead>
+            <tbody>
+              <tr v-if="!applications.length"><td colspan="4" class="text-center text-secondary py-5"><h2 class="h5 text-body">No applicants yet</h2><p class="mb-0">Applications will appear here when students apply to your positions.</p></td></tr>
+              <tr v-for="a in applications" :key="a.id">
+                  <td>
                     <h2 class="h5">{{ a.student.user.name }}</h2>
                     <div>Student ID: {{ a.student.roll_number }}</div>
                     <div>
@@ -19,8 +19,8 @@ window.CompanyApplicationsView = `
                       target="_blank"
                       >View resume</a
                     >
-                  </div>
-                  <div class="col-lg-3">
+                  </td>
+                  <td>
                     <strong>{{ a.drive.title }}</strong
                     ><br /><span
                       v-if="a.already_placed_elsewhere"
@@ -34,8 +34,8 @@ window.CompanyApplicationsView = `
                     <p class="small mt-2 mb-0">
                       Feedback: {{ a.feedback || "-" }}
                     </p>
-                  </div>
-                  <div class="col-lg-3">
+                  </td>
+                  <td>
                     <div
                       v-if="a.already_placed_elsewhere"
                       class="alert alert-secondary py-2 px-3 mb-0"
@@ -74,8 +74,9 @@ window.CompanyApplicationsView = `
                       Update
                     </button>
                     </template>
-                  </div>
-                  <div v-if="!a.already_placed_elsewhere && (a.interviews.length || (!a.student_placed && a.status === 'shortlisted' && !(a.placement && a.placement.status === 'placed')))" class="col-lg-3">
+                  </td>
+                  <td>
+                  <div v-if="!a.already_placed_elsewhere && (a.interviews.length || (!a.student_placed && a.status === 'shortlisted' && !(a.placement && a.placement.status === 'placed')))">
                     <template v-if="!a.interviews.length">
                       <label class="form-label">Schedule interview</label
                       ><input
@@ -87,7 +88,7 @@ window.CompanyApplicationsView = `
                         v-model="a.interviewLocation"
                         placeholder="Link or location"
                       /><button
-                        class="btn btn-outline-info btn-sm"
+                        class="btn btn-outline-secondary btn-sm"
                         @click="scheduleInterview(a)"
                       >
                         Schedule
@@ -119,11 +120,11 @@ window.CompanyApplicationsView = `
                         <span class="badge fs-6 text-bg-warning">Result pending</span>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                  </div><span v-else class="text-secondary">—</span>
+                  </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 `;

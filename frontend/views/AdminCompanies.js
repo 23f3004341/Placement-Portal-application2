@@ -116,9 +116,9 @@ window.AdminCompaniesView = `
             </div>
           </div>
         </div>
-        <div class="table-responsive card shadow-sm border-0">
+        <div class="table-responsive card shadow-sm border-0 rounded-4 overflow-hidden">
           <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
+            <thead>
               <tr>
                 <th>Company</th>
                 <th>Industry</th>
@@ -143,8 +143,7 @@ window.AdminCompaniesView = `
                 <td>
                   <div class="d-flex flex-wrap gap-1">
                     <button
-                      class="btn btn-sm"
-                      :class="themeOutlineButtonClass"
+                      class="btn btn-sm btn-outline-secondary"
                       @click="viewAdminCompany(c)"
                     >
                       View details</button
@@ -161,7 +160,7 @@ window.AdminCompaniesView = `
                     >
                       {{ c.user.active ? "Blacklist" : "Unblacklist" }}</button
                     ><button
-                      class="btn btn-danger btn-sm"
+                      class="btn btn-outline-danger btn-sm"
                       @click="adminDelete('companies', c.id)"
                     >
                       Delete

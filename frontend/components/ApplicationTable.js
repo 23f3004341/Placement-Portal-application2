@@ -1,7 +1,7 @@
 window.ApplicationTable = {
   template: `
-    <div class="table-responsive card border-0 shadow-sm">
-      <table class="table mb-0">
+    <div class="table-responsive card border-0 shadow-sm rounded-4 overflow-hidden">
+      <table class="table table-hover align-middle mb-0">
         <thead>
           <tr>
             <th>Student</th>

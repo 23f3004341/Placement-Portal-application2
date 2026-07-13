@@ -20,6 +20,12 @@ const App = {
       alert: { message: "", type: "info", progress: 100 },
       alertTimer: null,
       alertProgressTimer: null,
+      hoveredNav: "",
+      loginPasswordVisible: false,
+      studentPasswordVisible: false,
+      studentConfirmPasswordVisible: false,
+      companyPasswordVisible: false,
+      companyConfirmPasswordVisible: false,
       publicStats: {
         totals: {},
         trends: { labels: [], values: [] },
@@ -29,10 +35,12 @@ const App = {
       charts: [],
       dashboard: { metrics: {} },
       dashboardChartVersion: 0,
+      dashboardRefreshTimer: null,
       search: "",
       companies: [],
       selectedAdminCompany: null,
       students: [],
+      selectedAdminStudent: null,
       editingStudentId: null,
       studentEditForm: {},
       drives: [],
@@ -139,49 +147,49 @@ const App = {
     roleNavClass() {
       if (!this.user) return "bg-body-tertiary";
       return {
-        student: "bg-primary-subtle",
+        student: "bg-success-subtle",
         company: "bg-warning-subtle",
-        admin: "bg-info-subtle",
+        admin: "bg-danger-subtle",
       }[this.user.role] || "bg-body-tertiary";
     },
     roleShellClass() {
       if (!this.user) return "";
       return {
-        student: "bg-primary-subtle",
+        student: "bg-success-subtle",
         company: "bg-warning-subtle",
-        admin: "bg-info-subtle",
+        admin: "bg-danger-subtle",
       }[this.user.role] || "";
     },
     themeButtonClass() {
       if (!this.user) return "btn-secondary";
       return {
-        student: "btn-primary",
-        company: "btn-warning",
-        admin: "btn-info",
+        student: "btn-success",
+        company: "btn-secondary",
+        admin: "btn-secondary",
       }[this.user.role] || "btn-secondary";
     },
     themeOutlineButtonClass() {
       if (!this.user) return "btn-outline-secondary";
       return {
-        student: "btn-outline-primary",
-        company: "btn-outline-warning",
-        admin: "btn-outline-info",
+        student: "btn-outline-success",
+        company: "btn-outline-secondary",
+        admin: "btn-outline-secondary",
       }[this.user.role] || "btn-outline-secondary";
     },
     themeTextClass() {
       if (!this.user) return "text-secondary";
       return {
-        student: "text-primary-emphasis",
+        student: "text-success-emphasis",
         company: "text-warning-emphasis",
-        admin: "text-info-emphasis",
+        admin: "text-danger-emphasis",
       }[this.user.role] || "text-secondary";
     },
     themeBorderClass() {
       if (!this.user) return "border-secondary";
       return {
-        student: "border-primary",
+        student: "border-success",
         company: "border-warning",
-        admin: "border-info",
+        admin: "border-secondary",
       }[this.user.role] || "border-secondary";
     },
     today() {
@@ -195,11 +203,21 @@ const App = {
     await this.route();
   },
   beforeUnmount() {
+    if (this.dashboardRefreshTimer) clearTimeout(this.dashboardRefreshTimer);
     if (this.exportPollTimer) clearTimeout(this.exportPollTimer);
     if (this.alertTimer) clearTimeout(this.alertTimer);
     if (this.alertProgressTimer) clearInterval(this.alertProgressTimer);
   },
   methods: {
+    navItemClass(target) {
+      const isWarm = this.hoveredNav === target || this.page === target;
+      if (!isWarm || !this.user) return "";
+      return {
+        student: "bg-success bg-gradient text-white border rounded px-3 shadow-sm",
+        company: "bg-warning bg-gradient text-dark border rounded px-3 shadow-sm",
+        admin: "bg-danger bg-gradient text-white border rounded px-3 shadow-sm",
+      }[this.user.role] || "bg-light rounded px-3";
+    },
     notify(message, type = "success") {
       if (this.alertTimer) clearTimeout(this.alertTimer);
       if (this.alertProgressTimer) clearInterval(this.alertProgressTimer);
@@ -270,6 +288,10 @@ const App = {
       location.hash = page;
     },
     async route() {
+      if (this.dashboardRefreshTimer) {
+        clearTimeout(this.dashboardRefreshTimer);
+        this.dashboardRefreshTimer = null;
+      }
       const requested = window.resolvePage(location.hash, this.user);
       this.page = requested;
       this.search = "";
@@ -493,13 +515,76 @@ const App = {
       if (!this.user) return;
       const result = await this.api(`/api/${this.user.role}/dashboard`);
       this.dashboard = result.data;
-      if (this.user.role === "admin") this.dashboardChartVersion = Date.now();
+      if (["admin", "company"].includes(this.user.role)) this.dashboardChartVersion = Date.now();
       await nextTick();
       this.renderDashboardCharts();
+      if (["admin", "company"].includes(this.user.role) && this.page === "dashboard") {
+        if (this.dashboardRefreshTimer) clearTimeout(this.dashboardRefreshTimer);
+        this.dashboardRefreshTimer = setTimeout(() => this.loadDashboard(), 30000);
+      }
     },
     renderDashboardCharts() {
       this.charts.forEach((chart) => chart.destroy());
       this.charts = [];
+      if (this.user?.role === "admin" && this.dashboard.company_analytics) {
+        const analytics = this.dashboard.company_analytics;
+        const palette = ["#9aabba", "#c9b48b", "#80a995", "#bc898f"];
+        const labels = { applied: "Applied", shortlisted: "Shortlisted", placed: "Placed", rejected: "Rejected" };
+        const barEl = document.getElementById("adminCompanyBarChart");
+        const doughnutEl = document.getElementById("adminOverallDoughnutChart");
+        const overallTotal = analytics.statuses.reduce((total, status) => total + Number(analytics.overall[status] || 0), 0);
+        const centerTotalPlugin = {
+          id: "centerTotal",
+          afterDraw(chart) {
+            const { ctx, chartArea } = chart;
+            if (!chartArea) return;
+            const x = (chartArea.left + chartArea.right) / 2;
+            const y = (chartArea.top + chartArea.bottom) / 2;
+            ctx.save();
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillStyle = "#343a40"; ctx.font = "600 26px system-ui"; ctx.fillText(String(overallTotal), x, y - 7);
+            ctx.fillStyle = "#6c757d"; ctx.font = "12px system-ui"; ctx.fillText("applications", x, y + 17);
+            ctx.restore();
+          },
+        };
+        const commonLegend = {
+          position: "bottom",
+          labels: { usePointStyle: true, pointStyle: "rectRounded", boxWidth: 10, boxHeight: 10, padding: 18, color: "#4f555b", font: { size: 12 } },
+        };
+        if (barEl) this.charts.push(new Chart(barEl, {
+          type: "bar",
+          data: {
+            labels: analytics.labels,
+            datasets: analytics.statuses.map((status, index) => ({
+              label: labels[status], data: analytics.series[status], backgroundColor: palette[index],
+              borderColor: palette[index], borderWidth: 1, borderRadius: 7, borderSkipped: false,
+              maxBarThickness: 42, categoryPercentage: .72, barPercentage: .82,
+            })),
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: { legend: commonLegend, title: { display: true, text: "Applications by company", color: "#3f464d", font: { size: 15, weight: "500" }, padding: { bottom: 18 } }, tooltip: { padding: 12, cornerRadius: 8 } },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: "#555d64", font: { size: 12 } } },
+              y: { beginAtZero: true, suggestedMax: 3, ticks: { precision: 0, stepSize: 1, color: "#687078" }, grid: { color: "rgba(90, 98, 105, .1)" }, border: { display: false } },
+            },
+          },
+        }));
+        if (doughnutEl) this.charts.push(new Chart(doughnutEl, {
+          type: "doughnut",
+          plugins: [centerTotalPlugin],
+          data: {
+            labels: analytics.statuses.map((status) => labels[status]),
+            datasets: [{ data: analytics.statuses.map((status) => analytics.overall[status]), backgroundColor: palette, borderColor: "#fff", borderWidth: 3, hoverOffset: 7 }],
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, cutout: "64%",
+            plugins: { legend: commonLegend, title: { display: true, text: "Overall application record", color: "#3f464d", font: { size: 15, weight: "500" }, padding: { bottom: 18 } }, tooltip: { padding: 12, cornerRadius: 8 } },
+          },
+        }));
+        return;
+      }
       const el = document.getElementById("adminPlacementChart");
       if (!el || !this.dashboard.placement_chart) return;
       this.charts.push(
@@ -565,6 +650,7 @@ const App = {
         `/api/admin/students?q=${encodeURIComponent(this.search)}`
       );
       this.students = r.data;
+      if (this.selectedAdminStudent) this.selectedAdminStudent = this.students.find((s) => s.id === this.selectedAdminStudent.id) || null;
     },
     companyApprovalLabel(company) {
       if (company.user.approved && company.user.active) return "approved";
@@ -636,6 +722,9 @@ const App = {
     },
     viewAdminCompany(company) {
       this.selectedAdminCompany = company;
+    },
+    viewAdminStudent(student) {
+      this.selectedAdminStudent = student;
     },
     viewAdminDrive(drive) {
       this.selectedAdminDrive = drive;
@@ -898,7 +987,6 @@ const App = {
         const data = new FormData();
         const s = this.studentProfile;
         [
-          "roll_number",
           "course",
           "branch",
           "graduation_year",
@@ -932,6 +1020,12 @@ const App = {
         this.user.email = r.data.user.email;
         this.notify(r.message);
         await this.loadProfile();
+      }).catch(() => {});
+    },
+    async cancelProfileChanges() {
+      await this.withLoading(async () => {
+        await this.loadProfile();
+        if (this.$refs.profileResume) this.$refs.profileResume.value = "";
       }).catch(() => {});
     },
     async saveCompanyProfile() {

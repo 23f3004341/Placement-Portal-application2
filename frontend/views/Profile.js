@@ -63,10 +63,12 @@ window.ProfileView = `
                   />
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">Gender</label
+                  <label class="form-label"
+                    >Gender <span class="text-danger">*</span></label
                   ><select
                     class="form-select"
                     v-model="studentProfile.user.gender"
+                    required
                   >
                     <option value="">Select gender</option>
                     <option
@@ -79,11 +81,13 @@ window.ProfileView = `
                   </select>
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">Date of birth</label
+                  <label class="form-label"
+                    >Date of birth <span class="text-danger">*</span></label
                   ><input
                     class="form-control"
                     type="date"
                     v-model="studentProfile.user.dob"
+                    required
                   />
                 </div>
                 <div class="col-md-4">
@@ -91,8 +95,8 @@ window.ProfileView = `
                     >Student ID <span class="text-danger">*</span></label
                   ><input
                     class="form-control"
-                    v-model.trim="studentProfile.roll_number"
-                    required
+                    :value="studentProfile.roll_number"
+                    readonly
                   />
                 </div>
                 <div class="col-md-4">
@@ -250,8 +254,9 @@ window.ProfileView = `
                     accept=".pdf,.doc,.docx"
                   />
                 </div>
-                <div class="col-12">
+                <div class="col-12 d-flex flex-wrap gap-2">
                   <button class="btn" :class="themeButtonClass">Save profile</button>
+                  <button class="btn btn-outline-secondary" type="button" @click="cancelProfileChanges">Cancel</button>
                 </div>
               </div>
             </div>
@@ -316,8 +321,9 @@ window.ProfileView = `
                     v-model.trim="companyProfile.description"
                   ></textarea>
                 </div>
-                <div class="col-12">
+                <div class="col-12 d-flex flex-wrap gap-2">
                   <button class="btn" :class="themeButtonClass">Save profile</button>
+                  <button class="btn btn-outline-secondary" type="button" @click="cancelProfileChanges">Cancel</button>
                 </div>
               </div>
             </div>

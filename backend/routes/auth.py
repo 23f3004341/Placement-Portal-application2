@@ -94,6 +94,10 @@ def validate_registration(payload, company=False):
             errors["first_name"] = "First name is required."
         if not (payload.get("last_name") or "").strip() and len((payload.get("name") or "").strip()) < 2:
             errors["last_name"] = "Last name is required."
+        if not (payload.get("gender") or "").strip():
+            errors["gender"] = "Gender is required."
+        if not (payload.get("dob") or "").strip():
+            errors["dob"] = "Date of birth is required."
     email = (payload.get("email") or "").strip().lower()
     if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
         errors["email"] = "A valid email is required."
@@ -124,6 +128,8 @@ def register_student():
         "graduation_year": payload.get("graduation_year"),
         "contact": payload.get("contact"),
         "cgpa": payload.get("cgpa"),
+        "gender": payload.get("gender"),
+        "dob": payload.get("dob"),
     }
     for key, value in required.items():
         if not value:
@@ -150,15 +156,15 @@ def register_student():
         assign_role(user, "student")
         db.session.add(user)
         db.session.flush()
-        existing_rolls = {
+        existing_student_numbers = {
             int(match.group(1))
             for (roll_number,) in db.session.query(StudentProfile.roll_number).all()
-            if roll_number and (match := re.fullmatch(r"STU(\d+)", roll_number.strip().upper()))
+            if roll_number and (match := re.fullmatch(r"STU_(\d+)", roll_number.strip().upper()))
         }
-        next_roll_number = 1
-        while next_roll_number in existing_rolls:
-            next_roll_number += 1
-        roll = f"STU{next_roll_number:02d}"
+        next_student_number = 1001
+        while next_student_number in existing_student_numbers:
+            next_student_number += 1
+        roll = f"STU_{next_student_number}"
         student = StudentProfile(
             user_id=user.user_id,
             roll_number=roll,

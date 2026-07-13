@@ -107,6 +107,8 @@ class ApiWorkflowTests(unittest.TestCase):
             "email": "workflow-student@example.com",
             "password": "secret123",
             "contact": "9999999998",
+            "gender": "Female",
+            "dob": "2001-01-01",
             "course": "B.Tech",
             "branch": "CSE",
             "graduation_year": "2099",

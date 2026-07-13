@@ -15,16 +15,25 @@ def student_dashboard():
         db.session.commit()
         applications = Application.query.filter_by(student_id=student.student_id).order_by(Application.application_id.desc()).all()
     latest_export = ExportJob.query.filter_by(student_id=student.student_id).order_by(ExportJob.created_at.desc()).first()
+    approved_drives = JobPosition.query.filter_by(status="approved", is_active=True)
+    current_statuses = []
+    for application in applications:
+        company_name = application.job_position.company.company_name
+        scheduled_interview = next((item for item in application.interviews if item.status == "scheduled"), None)
+        if application.status == "placed":
+            current_statuses.append({"label": "Placed", "company": company_name, "status": "placed"})
+        elif scheduled_interview or application.status == "interview":
+            current_statuses.append({"label": "Interview scheduled", "company": company_name, "status": "interview"})
+        elif application.status == "shortlisted":
+            current_statuses.append({"label": "Shortlisted", "company": company_name, "status": "shortlisted"})
     return api_ok({
         "student": student_json(student),
         "metrics": {
-            "approved_drives": JobPosition.query.filter_by(status="approved", is_active=True).count(),
-            "applications": len(applications),
-            "interviews": sum(len([i for i in a.interviews if i.status == "scheduled"]) for a in applications),
-            "placements": sum(1 for a in applications if a.placement),
+            "companies": approved_drives.with_entities(func.count(func.distinct(JobPosition.company_id))).scalar() or 0,
+            "approved_drives": approved_drives.count(),
         },
+        "current_statuses": current_statuses,
         "latest_export": export_json(latest_export),
-        "recent_applications": [application_json(item) for item in applications[:5]],
     })
 
 
@@ -55,24 +64,18 @@ def student_profile_update():
         if contact and not re.fullmatch(r"\d{10}", contact):
             return api_error("Contact number must contain exactly 10 digits.", 422)
         current_user.contact_number = contact
-        current_user.gender = (payload.get("gender") or "").strip() or None
-        current_user.dob = parse_date(payload.get("dob"), "Date of birth")
+        gender = (payload.get("gender") or "").strip()
+        if not gender:
+            return api_error("Gender is required.", 422)
+        if not (payload.get("dob") or "").strip():
+            return api_error("Date of birth is required.", 422)
+        current_user.gender = gender
+        current_user.dob = parse_date(payload.get("dob"), "Date of birth", True)
 
         if any(key in payload for key in ("address_line1", "address_line2", "landmark", "pincode", "city", "state", "country")):
             current_user.address = compose_address(payload)
         else:
             current_user.address = (payload.get("address") or current_user.address or "").strip()
-
-        roll_number = (payload.get("roll_number") or student.roll_number).strip().upper()
-        if not roll_number:
-            return api_error("Student ID is required.", 422)
-        existing_roll = StudentProfile.query.filter(
-            func.lower(StudentProfile.roll_number) == roll_number.lower(),
-            StudentProfile.student_id != student.student_id,
-        ).first()
-        if existing_roll:
-            return api_error("This Student ID is already registered.", 409)
-        student.roll_number = roll_number
 
         student.course = (payload.get("course") or student.course).strip()
         student.branch = (payload.get("branch") or student.branch).strip()

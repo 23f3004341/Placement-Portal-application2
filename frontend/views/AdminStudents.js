@@ -8,9 +8,15 @@ window.AdminStudentsView = `
           :eyebrow-class="themeTextClass"
           @search="loadAdminStudents"
         ></list-header>
-        <div class="table-responsive card shadow-sm border-0">
+        <div v-if="selectedAdminStudent" class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between gap-3 mb-4"><div><p class="small text-uppercase text-secondary fw-semibold mb-1">Student profile</p><h2 class="h4 mb-1">{{ selectedAdminStudent.user.name }}</h2><status-badge :value="selectedAdminStudent.user.active ? 'active' : 'inactive'"></status-badge></div><button class="btn btn-outline-secondary btn-sm align-self-start" @click="selectedAdminStudent = null">Back to list</button></div>
+            <div class="row g-4"><div class="col-md-6"><h3 class="h6 text-secondary text-uppercase">Academic details</h3><dl class="row mb-0"><dt class="col-5">Student ID</dt><dd class="col-7">{{ selectedAdminStudent.roll_number }}</dd><dt class="col-5">Course</dt><dd class="col-7">{{ selectedAdminStudent.course || '-' }}</dd><dt class="col-5">Branch</dt><dd class="col-7">{{ selectedAdminStudent.branch || '-' }}</dd><dt class="col-5">Graduation year</dt><dd class="col-7">{{ selectedAdminStudent.graduation_year || '-' }}</dd><dt class="col-5">CGPA</dt><dd class="col-7">{{ selectedAdminStudent.cgpa ?? '-' }}</dd></dl></div><div class="col-md-6"><h3 class="h6 text-secondary text-uppercase">Contact details</h3><dl class="row mb-0"><dt class="col-4">Email</dt><dd class="col-8 text-break">{{ selectedAdminStudent.user.email }}</dd><dt class="col-4">Phone</dt><dd class="col-8">{{ selectedAdminStudent.user.contact || '-' }}</dd><dt class="col-4">Address</dt><dd class="col-8">{{ selectedAdminStudent.user.address || '-' }}</dd></dl></div></div>
+          </div>
+        </div>
+        <div class="table-responsive card shadow-sm border-0 rounded-4 overflow-hidden">
           <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
+            <thead>
               <tr>
                 <th>Student</th>
                 <th>Student ID</th>
@@ -24,7 +30,7 @@ window.AdminStudentsView = `
               <tr v-if="!students.length"><td colspan="6" class="text-center text-secondary py-5">No students found.</td></tr>
               <template v-for="s in students" :key="s.id">
               <tr>
-                <td>{{ s.user.name }}</td>
+                <td><a href="#" class="link-dark fw-semibold" @click.prevent="viewAdminStudent(s)">{{ s.user.name }}</a></td>
                 <td>{{ s.roll_number }}</td>
                 <td>{{ s.course }} / {{ s.branch }}</td>
                 <td>{{ s.user.contact }}</td>
@@ -33,8 +39,7 @@ window.AdminStudentsView = `
                 </td>
                 <td class="d-flex flex-wrap gap-1">
                   <button
-                    class="btn btn-sm"
-                    :class="themeOutlineButtonClass"
+                    class="btn btn-sm btn-outline-secondary"
                     @click="startStudentEdit(s)"
                   >
                     Edit</button
@@ -51,7 +56,7 @@ window.AdminStudentsView = `
                   >
                     {{ s.user.active ? "Blacklist" : "Unblacklist" }}</button
                   ><button
-                    class="btn btn-danger btn-sm"
+                    class="btn btn-outline-danger btn-sm"
                     @click="adminDelete('students', s.id)"
                   >
                     Delete
@@ -75,7 +80,7 @@ window.AdminStudentsView = `
                     </div>
                     <div class="col-md-2">
                       <label class="form-label small">Student ID</label>
-                      <input class="form-control form-control-sm" v-model.trim="studentEditForm.roll_number" />
+                      <input class="form-control form-control-sm" :value="studentEditForm.roll_number" readonly />
                     </div>
                     <div class="col-md-2">
                       <label class="form-label small">Year</label>

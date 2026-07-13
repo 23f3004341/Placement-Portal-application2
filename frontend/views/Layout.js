@@ -1,10 +1,12 @@
 window.AppTemplate = `
   <div v-cloak>
     <nav class="navbar navbar-expand-lg sticky-top border-bottom shadow-sm" :class="roleNavClass">
-      <div class="container-xxl px-3 px-lg-4">
+      <div class="container-fluid px-3 px-lg-4">
         <a class="navbar-brand fw-bold" href="#" @click.prevent="go('home')"
           >Placement Portal</a
         >
+        <span v-if="user && user.role === 'admin'" class="ms-4 fw-semibold">Admin Dashboard</span>
+        <span v-else-if="user && user.role === 'company'" class="ms-4 fw-semibold">Company Dashboard</span>
         <button
           class="navbar-toggler"
           type="button"
@@ -14,19 +16,23 @@ window.AppTemplate = `
           <span class="navbar-toggler-icon"></span>
         </button>
         <div id="mainNav" class="collapse navbar-collapse">
-          <div class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+          <div class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
             <template v-if="user">
               <button
                 class="btn btn-link nav-link"
-                :class="{ active: page === 'dashboard' }"
+                :class="[navItemClass('dashboard'), { active: page === 'dashboard' }]"
+                @mouseenter="hoveredNav = 'dashboard'"
+                @mouseleave="hoveredNav = ''"
                 @click="go('dashboard')"
               >
-                Dashboard
+                Home
               </button>
               <button
                 v-if="user && user.role === 'admin'"
                 class="btn btn-link nav-link"
-                :class="{ active: page === 'admin-companies' }"
+                :class="[navItemClass('admin-companies'), { active: page === 'admin-companies' }]"
+                @mouseenter="hoveredNav = 'admin-companies'"
+                @mouseleave="hoveredNav = ''"
                 @click="go('admin-companies')"
               >
                 Companies
@@ -34,7 +40,9 @@ window.AppTemplate = `
               <button
                 v-if="user && user.role === 'admin'"
                 class="btn btn-link nav-link"
-                :class="{ active: page === 'admin-students' }"
+                :class="[navItemClass('admin-students'), { active: page === 'admin-students' }]"
+                @mouseenter="hoveredNav = 'admin-students'"
+                @mouseleave="hoveredNav = ''"
                 @click="go('admin-students')"
               >
                 Students
@@ -42,7 +50,9 @@ window.AppTemplate = `
               <button
                 v-if="user && user.role === 'admin'"
                 class="btn btn-link nav-link"
-                :class="{ active: page === 'admin-drives' }"
+                :class="[navItemClass('admin-drives'), { active: page === 'admin-drives' }]"
+                @mouseenter="hoveredNav = 'admin-drives'"
+                @mouseleave="hoveredNav = ''"
                 @click="go('admin-drives')"
               >
                 Drives
@@ -50,7 +60,9 @@ window.AppTemplate = `
               <button
                 v-if="user && user.role === 'admin'"
                 class="btn btn-link nav-link"
-                :class="{ active: page === 'admin-applications' }"
+                :class="[navItemClass('admin-applications'), { active: page === 'admin-applications' }]"
+                @mouseenter="hoveredNav = 'admin-applications'"
+                @mouseleave="hoveredNav = ''"
                 @click="go('admin-applications')"
               >
                 Applications
@@ -58,7 +70,9 @@ window.AppTemplate = `
               <button
                 v-if="user && user.role === 'company'"
                 class="btn btn-link nav-link"
-                :class="{ active: page === 'company-drives' }"
+                :class="[navItemClass('company-drives'), { active: page === 'company-drives' }]"
+                @mouseenter="hoveredNav = 'company-drives'"
+                @mouseleave="hoveredNav = ''"
                 @click="go('company-drives')"
               >
                 Drives
@@ -66,7 +80,9 @@ window.AppTemplate = `
               <button
                 v-if="user && user.role === 'company'"
                 class="btn btn-link nav-link"
-                :class="{ active: page === 'company-applications' }"
+                :class="[navItemClass('company-applications'), { active: page === 'company-applications' }]"
+                @mouseenter="hoveredNav = 'company-applications'"
+                @mouseleave="hoveredNav = ''"
                 @click="go('company-applications')"
               >
                 Applicants
@@ -74,7 +90,9 @@ window.AppTemplate = `
               <button
                 v-if="user && user.role === 'student'"
                 class="btn btn-link nav-link"
-                :class="{ active: page === 'student-drives' }"
+                :class="[navItemClass('student-drives'), { active: page === 'student-drives' }]"
+                @mouseenter="hoveredNav = 'student-drives'"
+                @mouseleave="hoveredNav = ''"
                 @click="go('student-drives')"
               >
                 Find Jobs
@@ -82,7 +100,9 @@ window.AppTemplate = `
               <button
                 v-if="user && user.role === 'student'"
                 class="btn btn-link nav-link"
-                :class="{ active: page === 'student-applications' }"
+                :class="[navItemClass('student-applications'), { active: page === 'student-applications' }]"
+                @mouseenter="hoveredNav = 'student-applications'"
+                @mouseleave="hoveredNav = ''"
                 @click="go('student-applications')"
               >
                 My Applications
@@ -90,7 +110,9 @@ window.AppTemplate = `
               <button
                 v-if="user && user.role !== 'admin'"
                 class="btn btn-link nav-link"
-                :class="{ active: page === 'profile' }"
+                :class="[navItemClass('profile'), { active: page === 'profile' }]"
+                @mouseenter="hoveredNav = 'profile'"
+                @mouseleave="hoveredNav = ''"
                 @click="go('profile')"
               >
                 Profile
@@ -127,7 +149,7 @@ window.AppTemplate = `
       </div>
     </nav>
 
-    <main class="container-xxl px-3 px-lg-4 py-4 py-lg-5 rounded-bottom" :class="roleShellClass">
+    <main class="container-xxl px-3 px-lg-4 py-4 py-lg-5 mt-4 mb-4 rounded-4 shadow-sm" :class="roleShellClass">
       <div
         v-if="alert.message"
         class="d-inline-block"

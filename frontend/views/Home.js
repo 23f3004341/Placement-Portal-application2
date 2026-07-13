@@ -3,11 +3,11 @@ window.HomeView = `
         <div class="card border-0 shadow-sm bg-success-subtle mb-4">
           <div class="card-body p-4 p-lg-5">
             <div class="row align-items-center g-4">
-              <div class="col-lg-8">
+              <div class="col-lg-10">
                 <span class="badge rounded-pill text-bg-light text-success-emphasis border mb-3">
                   Northbridge University Placement Cell
                 </span>
-                <h1 class="display-5 fw-bold mb-3">Placement Portal</h1>
+                <h1 class="display-5 fw-bold mb-3">Northbridge University</h1>
                 <p class="lead text-secondary mb-4">
                   A calm, organized space for students, companies, and the placement cell
                   to manage campus hiring.
@@ -15,16 +15,6 @@ window.HomeView = `
                 <div class="d-flex flex-wrap gap-2">
                   <button class="btn btn-success btn-lg px-4" @click="go('login')">Login</button>
                   <button class="btn btn-outline-success btn-lg px-4" @click="go('register')">Create account</button>
-                </div>
-              </div>
-              <div class="col-lg-4">
-                <div class="card border-0 shadow-sm">
-                  <div class="card-body p-4">
-                    <h2 class="h5">Simple. Clear. Centralized.</h2>
-                    <p class="text-secondary mb-0">
-                      Use your role account to access the tools meant for you.
-                    </p>
-                  </div>
                 </div>
               </div>
             </div>

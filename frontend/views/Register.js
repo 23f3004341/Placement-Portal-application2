@@ -4,8 +4,8 @@ window.RegisterView = `
         class="row justify-content-center"
       >
         <div class="col-xl-9">
-          <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
+          <div class="card shadow-sm border-0 bg-light">
+            <div class="card-body p-4 p-lg-5">
               <div
                 class="d-flex justify-content-between align-items-center mb-3"
               >
@@ -15,8 +15,8 @@ window.RegisterView = `
                     class="btn"
                     :class="
                       registerRole === 'student'
-                        ? 'btn-primary'
-                        : 'btn-outline-primary'
+                        ? 'btn-success'
+                        : 'btn-outline-success'
                     "
                     @click="registerRole = 'student'"
                   >
@@ -25,8 +25,8 @@ window.RegisterView = `
                     class="btn"
                     :class="
                       registerRole === 'company'
-                        ? 'btn-primary'
-                        : 'btn-outline-primary'
+                        ? 'btn-success'
+                        : 'btn-outline-success'
                     "
                     @click="registerRole = 'company'"
                   >
@@ -83,26 +83,44 @@ window.RegisterView = `
                 <div class="col-md-3">
                   <label class="form-label"
                     >Password <span class="text-danger">*</span></label
-                  ><input
-                    class="form-control"
-                    type="password"
-                    minlength="6"
-                    v-model="studentRegister.password"
-                    placeholder="Create password"
-                    required
-                  />
+                  ><div class="input-group">
+                    <input
+                      class="form-control"
+                      :type="studentPasswordVisible ? 'text' : 'password'"
+                      minlength="6"
+                      v-model="studentRegister.password"
+                      placeholder="Create password"
+                      required
+                    />
+                    <button
+                      class="btn btn-outline-success"
+                      type="button"
+                      @click="studentPasswordVisible = !studentPasswordVisible"
+                    >
+                      {{ studentPasswordVisible ? "Hide" : "Show" }}
+                    </button>
+                  </div>
                 </div>
                 <div class="col-md-3">
                   <label class="form-label"
                     >Confirm password <span class="text-danger">*</span></label
-                  ><input
-                    class="form-control"
-                    type="password"
-                    minlength="6"
-                    v-model="studentRegister.confirm_password"
-                    placeholder="Repeat password"
-                    required
-                  />
+                  ><div class="input-group">
+                    <input
+                      class="form-control"
+                      :type="studentConfirmPasswordVisible ? 'text' : 'password'"
+                      minlength="6"
+                      v-model="studentRegister.confirm_password"
+                      placeholder="Repeat password"
+                      required
+                    />
+                    <button
+                      class="btn btn-outline-success"
+                      type="button"
+                      @click="studentConfirmPasswordVisible = !studentConfirmPasswordVisible"
+                    >
+                      {{ studentConfirmPasswordVisible ? "Hide" : "Show" }}
+                    </button>
+                  </div>
                 </div>
                 <div class="col-md-4">
                   <label class="form-label"
@@ -119,8 +137,9 @@ window.RegisterView = `
                   />
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">Gender</label
-                  ><select class="form-select" v-model="studentRegister.gender">
+                  <label class="form-label"
+                    >Gender <span class="text-danger">*</span></label
+                  ><select class="form-select" v-model="studentRegister.gender" required>
                     <option value="">Select gender</option>
                     <option
                       v-for="gender in genderOptions"
@@ -132,11 +151,13 @@ window.RegisterView = `
                   </select>
                 </div>
                 <div class="col-md-4">
-                  <label class="form-label">Date of birth</label
+                  <label class="form-label"
+                    >Date of birth <span class="text-danger">*</span></label
                   ><input
                     class="form-control"
                     type="date"
                     v-model="studentRegister.dob"
+                    required
                   />
                 </div>
                 <div class="col-md-4">
@@ -308,7 +329,7 @@ window.RegisterView = `
                   />
                 </div>
                 <div class="col-12">
-                  <button class="btn btn-primary">Register student</button>
+                  <button class="btn btn-success">Register student</button>
                 </div>
               </form>
               <form v-else class="row g-3" @submit.prevent="registerCompany">
@@ -346,26 +367,44 @@ window.RegisterView = `
                 <div class="col-md-3">
                   <label class="form-label"
                     >Password <span class="text-danger">*</span></label
-                  ><input
-                    class="form-control"
-                    type="password"
-                    minlength="6"
-                    v-model="companyRegister.password"
-                    placeholder="Create password"
-                    required
-                  />
+                  ><div class="input-group">
+                    <input
+                      class="form-control"
+                      :type="companyPasswordVisible ? 'text' : 'password'"
+                      minlength="6"
+                      v-model="companyRegister.password"
+                      placeholder="Create password"
+                      required
+                    />
+                    <button
+                      class="btn btn-outline-success"
+                      type="button"
+                      @click="companyPasswordVisible = !companyPasswordVisible"
+                    >
+                      {{ companyPasswordVisible ? "Hide" : "Show" }}
+                    </button>
+                  </div>
                 </div>
                 <div class="col-md-3">
                   <label class="form-label"
                     >Confirm password <span class="text-danger">*</span></label
-                  ><input
-                    class="form-control"
-                    type="password"
-                    minlength="6"
-                    v-model="companyRegister.confirm_password"
-                    placeholder="Repeat password"
-                    required
-                  />
+                  ><div class="input-group">
+                    <input
+                      class="form-control"
+                      :type="companyConfirmPasswordVisible ? 'text' : 'password'"
+                      minlength="6"
+                      v-model="companyRegister.confirm_password"
+                      placeholder="Repeat password"
+                      required
+                    />
+                    <button
+                      class="btn btn-outline-success"
+                      type="button"
+                      @click="companyConfirmPasswordVisible = !companyConfirmPasswordVisible"
+                    >
+                      {{ companyConfirmPasswordVisible ? "Hide" : "Show" }}
+                    </button>
+                  </div>
                 </div>
                 <div class="col-md-4">
                   <label class="form-label"
@@ -533,7 +572,7 @@ window.RegisterView = `
                   ></textarea>
                 </div>
                 <div class="col-12">
-                  <button class="btn btn-primary">Register company</button>
+                  <button class="btn btn-success">Register company</button>
                 </div>
               </form>
             </div>

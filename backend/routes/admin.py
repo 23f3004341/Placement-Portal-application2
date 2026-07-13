@@ -3,32 +3,68 @@ from . import *
 
 def admin_dashboard_summary():
     return {
-        "applications": Application.query.filter(Application.status != "withdrawn").count(),
-        "drives": JobPosition.query.count(),
         "companies": CompanyProfile.query.count(),
-        "placed": Application.query.filter_by(status="placed").count(),
-        "rejected": Application.query.filter_by(status="rejected").count(),
-        "shortlisted": Application.query.filter(Application.status.in_(("shortlisted", "interview"))).count(),
+        "drives": JobPosition.query.count(),
+        "students": StudentProfile.query.count(),
+        "applications": Application.query.filter(Application.status != "withdrawn").count(),
     }
 
 
 @main.get("/api/admin/dashboard")
 @role_required("admin")
-@cache.cached(timeout=60, key_prefix="admin_dashboard")
 def admin_dashboard():
     summary = admin_dashboard_summary()
+    companies = CompanyProfile.query.order_by(func.lower(CompanyProfile.company_name)).all()
+    status_keys = ["applied", "shortlisted", "placed", "rejected"]
+    company_counts = {company.company_id: Counter() for company in companies}
+    rows = (
+        db.session.query(JobPosition.company_id, Application.status, func.count(Application.application_id))
+        .join(JobPosition, Application.job_id == JobPosition.job_id)
+        .filter(Application.status.in_(status_keys))
+        .group_by(JobPosition.company_id, Application.status)
+        .all()
+    )
+    for company_id, status, count in rows:
+        company_counts.setdefault(company_id, Counter())[status] = count
     return api_ok({
         "metrics": summary,
         "summary": summary,
+        "company_analytics": {
+            "labels": [company.company_name for company in companies],
+            "statuses": status_keys,
+            "series": {
+                status: [company_counts[company.company_id][status] for company in companies]
+                for status in status_keys
+            },
+            "overall": {
+                status: sum(company_counts[company.company_id][status] for company in companies)
+                for status in status_keys
+            },
+        },
     })
 
 
 @main.get("/api/admin/dashboard/summary-chart.png")
 @role_required("admin")
 def admin_dashboard_summary_chart():
-    summary = admin_dashboard_summary()
-    labels = ["Applications", "Drives", "Companies", "Placed", "Rejected", "Shortlisted"]
-    values = [summary["applications"], summary["drives"], summary["companies"], summary["placed"], summary["rejected"], summary["shortlisted"]]
+    companies = CompanyProfile.query.order_by(func.lower(CompanyProfile.company_name)).all()
+    labels = [company.company_name for company in companies]
+    status_groups = {
+        "Applied": {"applied"},
+        "Shortlisted": {"shortlisted"},
+        "Placed": {"placed"},
+        "Rejected": {"rejected"},
+    }
+    company_counts = {company.company_id: Counter() for company in companies}
+    rows = (
+        db.session.query(JobPosition.company_id, Application.status, func.count(Application.application_id))
+        .join(JobPosition, Application.job_id == JobPosition.job_id)
+        .filter(Application.status != "withdrawn")
+        .group_by(JobPosition.company_id, Application.status)
+        .all()
+    )
+    for company_id, status, count in rows:
+        company_counts.setdefault(company_id, Counter())[status] = count
     try:
         mpl_cache = Path(current_app.instance_path) / "matplotlib-cache"
         mpl_cache.mkdir(parents=True, exist_ok=True)
@@ -37,20 +73,64 @@ def admin_dashboard_summary_chart():
         matplotlib.use("Agg")
         from matplotlib import pyplot as plt
 
-        fig, ax = plt.subplots(figsize=(9, 3.8), dpi=150)
-        colors = ["#cfe2ff", "#fff3cd", "#d1e7dd", "#badbcc", "#f8d7da", "#cff4fc"]
-        bars = ax.barh(labels, values, color=colors, edgecolor="#adb5bd", linewidth=0.8)
-        ax.invert_yaxis()
-        ax.set_xlabel("Count")
-        ax.set_title("Placement Portal Summary", pad=12, fontsize=13, fontweight="bold")
-        ax.spines[["top", "right", "left"]].set_visible(False)
-        ax.grid(axis="x", color="#e9ecef", linewidth=0.8)
+        fig, (ax, pie_ax) = plt.subplots(
+            1, 2, figsize=(12, 4.8), dpi=150,
+            gridspec_kw={"width_ratios": [1.65, 1]},
+        )
+        colors = ["#b8c5d6", "#d8c6a5", "#9dbdaf", "#d4aeb2"]
+        x = list(range(len(labels)))
+        width = 0.18
+        for index, (group, statuses) in enumerate(status_groups.items()):
+            values = [sum(company_counts[company.company_id][status] for status in statuses) for company in companies]
+            bars = ax.bar([value + (index - 1.5) * width for value in x], values, width, label=group, color=colors[index])
+            ax.bar_label(bars, padding=2, fontsize=8, labels=[str(value) if value else "" for value in values])
+        ax.set_xticks(x, labels, rotation=25, ha="right")
+        ax.set_ylabel("Applications")
+        ax.set_title("Company placement analytics", pad=14, fontsize=11, fontweight="normal", color="#495057")
+        ax.spines[["top", "right"]].set_visible(False)
+        ax.grid(axis="y", color="#ece6e5", linewidth=0.8)
         ax.set_axisbelow(True)
-        max_value = max(values) if values else 0
-        ax.set_xlim(0, max_value + max(1, max_value * 0.18))
-        for bar, value in zip(bars, values):
-            ax.text(value + 0.04, bar.get_y() + bar.get_height() / 2, str(value), va="center", fontsize=10)
-        fig.tight_layout()
+        if not labels:
+            ax.text(0.5, 0.5, "No company placement data yet", ha="center", va="center", transform=ax.transAxes)
+
+        overall = [
+            sum(
+                company_counts[company.company_id][status]
+                for company in companies
+                for status in statuses
+            )
+            for statuses in status_groups.values()
+        ]
+        if sum(overall):
+            pie_ax.pie(
+                overall,
+                labels=list(status_groups),
+                colors=colors,
+                autopct=lambda percent: f"{percent:.0f}%" if percent else "",
+                startangle=90,
+                wedgeprops={"linewidth": 1, "edgecolor": "white"},
+                textprops={"fontsize": 9},
+            )
+        else:
+            pie_ax.text(0.5, 0.5, "No application records yet", ha="center", va="center")
+        pie_ax.set_title("Overall application record", pad=14, fontsize=11, fontweight="normal", color="#495057")
+        handles, legend_labels = ax.get_legend_handles_labels()
+        fig.legend(
+            handles,
+            legend_labels,
+            loc="lower center",
+            ncol=4,
+            frameon=True,
+            fancybox=True,
+            framealpha=1,
+            edgecolor="#d8dadd",
+            facecolor="#f8f9fa",
+            fontsize=8.5,
+            borderpad=0.7,
+            handlelength=1.5,
+            columnspacing=1.5,
+        )
+        fig.tight_layout(rect=[0, 0.1, 1, 1])
         buffer = io.BytesIO()
         fig.savefig(buffer, format="png", bbox_inches="tight", facecolor="white")
         plt.close(fig)
@@ -171,15 +251,6 @@ def admin_update_student(student_id):
         if contact and not re.fullmatch(r"\d{10}", contact):
             return api_error("Contact number must contain exactly 10 digits.", 422)
         student.user.contact_number = contact
-
-        roll_number = (payload.get("roll_number") or student.roll_number).strip().upper()
-        existing_roll = StudentProfile.query.filter(
-            func.lower(StudentProfile.roll_number) == roll_number.lower(),
-            StudentProfile.student_id != student.student_id,
-        ).first()
-        if existing_roll:
-            return api_error("This Student ID is already registered.", 409)
-        student.roll_number = roll_number
 
         student.course = (payload.get("course") or student.course).strip()
         student.branch = (payload.get("branch") or student.branch).strip()
