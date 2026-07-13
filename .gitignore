@@ -1,6 +1,8 @@
 __pycache__/
 *.py[cod]
 *.db
+*.rdb
+celerybeat-schedule*
 .DS_Store
 instance/
 .env
