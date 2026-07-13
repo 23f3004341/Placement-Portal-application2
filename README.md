@@ -1,8 +1,8 @@
 # Placement Portal Application 
 
 This document is a practical manual for running and using the Placement Portal.
-The application is built with a VueJS single-page UI, Flask JSON APIs,
-Bootstrap, SQLite, Redis, and Celery.
+The application is built with a CDN-based Vue single-page UI, Flask JSON APIs,
+Bootstrap/Chart.js from CDN, SQLite, Redis/Celery, MailHog, and Google Chat webhook notifications.
 
 ## 1) What This System Does
 
@@ -23,9 +23,8 @@ Main modules:
 ## 2) Tech Stack
 
 - Backend API: `Flask`
-- Frontend UI: `VueJS` CLI single-page app, `Bootstrap`, and simple CSS
+- Frontend UI: CDN `Vue`, CDN `Bootstrap`, CDN `Chart.js`, and simple CSS
 - Database: `SQLite`
-- Cache: `Redis`
 - Batch jobs: `Celery` with `Redis`
 - Charts: `Chart.js`
 
@@ -33,17 +32,22 @@ Main modules:
 
 - Entry point: `app.py`
 - Backend folder: `backend/`
-- App factory and DB setup: `backend/init.py`
-- API routes and business logic: `backend/routes/api_routes.py`
-- Blueprint route package: `backend/routes/`
-- DB models package: `backend/models/`
-- Background jobs: `backend/tasks.py`
+- Main app and app factory: `backend/app.py`
+- Main config, ports, Redis, Celery, MailHog, webhooks: `backend/config.py`
+- Flask extensions: `backend/extensions.py`
+- Table creation/bootstrap: `backend/create_tables.py`
+- Database models: `backend/models.py`
+- Default admin seed: `backend/seed_admin.py`
+- API routes by role/work area: `backend/routes/`
+- Cron/task route wrappers: `backend/routes/cron.py`, `backend/routes/tasks_routes.py`
+- Celery entry point: `backend/celery_app.py`
+- Background jobs by job type: `backend/tasks/`
 - Frontend folder: `frontend/`
-- Frontend browser entry: `frontend/public/index.html`
-- Vue CLI config: `frontend/vue.config.js`
-- Vue app shell: `frontend/src/App.vue`
-- Vue source components: `frontend/src/components/`
-- CSS theme: `frontend/src/assets/theme.css`
+- Frontend browser entry: `frontend/index.html`
+- Frontend app script: `frontend/main.js`
+- Frontend components: `frontend/components/`
+- Frontend service placeholder: `frontend/services/api.js`
+- CSS theme: `frontend/theme.css`
 - Backend email templates: `backend/templates/emails/`
 
 ## 4) Installation and Run
@@ -60,33 +64,21 @@ python3 -m venv .venv
 source .venv/bin/activate
 cd backend
 pip install -r requirements.txt
-cd ../frontend
-npm install
 ```
 
-### 4.3 Start the Backend API
+### 4.3 Start the App
 
 ```bash
-cd backend
 python3 app.py
 ```
 
-Default backend URL:
+Default app URL:
 
 - `http://127.0.0.1:5000`
 
-### 4.4 Start the Vue CLI Frontend
+There is no separate frontend server now. Flask serves the CDN frontend directly.
 
-```bash
-cd frontend
-npm run serve
-```
-
-Default frontend URL:
-
-- `http://127.0.0.1:8080`
-
-### 4.5 Start Redis and Celery Jobs
+### 4.4 Start Redis and Celery Jobs
 
 Run Redis locally, then start the worker and scheduler in separate terminals:
 
@@ -96,13 +88,15 @@ redis-server
 
 ```bash
 cd backend
-celery -A app.celery worker --loglevel=info
+celery -A celery_app.celery worker --loglevel=info
 ```
 
 ```bash
 cd backend
-celery -A app.celery beat --loglevel=info
+celery -A celery_app.celery beat --loglevel=info
 ```
+
+Celery beat runs task (a) and task (b) every `120` seconds by default for viva/demo testing.
 
 Useful environment variables:
 
@@ -112,33 +106,41 @@ Useful environment variables:
 - `ADMIN_EMAIL`
 - `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_USE_TLS`, `MAIL_SENDER`
 - `CHAT_WEBHOOK_URL`
-- `SMS_WEBHOOK_URL` (provider-neutral JSON webhook accepting `to` and `message`)
-- `INTERVIEW_REMINDER_HOURS` (default: `24`)
-- `DAILY_REMINDER_HOUR`, `DAILY_REMINDER_MINUTE`, `REMINDER_LOOKAHEAD_DAYS`
-- `CACHE_DEFAULT_TIMEOUT`, `CACHE_SEARCH_TIMEOUT`
+- `CELERY_SYNC_SECONDS` (default: `120`)
+- `REMINDER_LOOKAHEAD_DAYS`
 
-Example daily deadline reminder setup:
+### 4.5 Start MailHog
 
 ```bash
-export DAILY_REMINDER_HOUR=9
-export DAILY_REMINDER_MINUTE=0
-export REMINDER_LOOKAHEAD_DAYS=3
-export CHAT_WEBHOOK_URL="https://chat.googleapis.com/..."
-export SMS_WEBHOOK_URL="https://your-sms-provider.example/send"
-cd backend
-celery -A app.celery worker --loglevel=info
+/Users/aryatilak/go/bin/MailHog \
+  -smtp-bind-addr 127.0.0.1:1025 \
+  -api-bind-addr 127.0.0.1:8025 \
+  -ui-bind-addr 127.0.0.1:8025 \
+  -api-host http://127.0.0.1:8025
 ```
 
-Start Celery beat in another terminal with the same exported values:
+MailHog ports are in `backend/config.py`:
+
+- SMTP: `127.0.0.1:1025`
+- UI/API: `http://127.0.0.1:8025`
+
+### 4.6 Google Chat Webhook
+
+Do not hardcode the webhook URL in Python files. Export it before starting Flask/Celery:
 
 ```bash
-export DAILY_REMINDER_HOUR=9
-export DAILY_REMINDER_MINUTE=0
+export CHAT_WEBHOOK_URL="<your Google Chat webhook URL>"
+```
+
+Then start Flask, Celery worker, and Celery beat from terminals where this variable exists.
+
+Example Celery setup:
+
+```bash
 export REMINDER_LOOKAHEAD_DAYS=3
-export CHAT_WEBHOOK_URL="https://chat.googleapis.com/..."
-export SMS_WEBHOOK_URL="https://your-sms-provider.example/send"
+export CHAT_WEBHOOK_URL="<your Google Chat webhook URL>"
 cd backend
-celery -A app.celery beat --loglevel=info
+celery -A celery_app.celery beat --loglevel=info
 ```
 
 To run tests, use the project root folder, not the `backend` folder:
@@ -163,6 +165,7 @@ Default admin values can be controlled with environment variables:
 - `DEFAULT_ADMIN_NAME`
 - `DEFAULT_ADMIN_PHONE`
 - `DEFAULT_ADMIN_EMPLOYEE_CODE`
+- MailHog is the default local email target. The MailHog settings live in `backend/config.py`.
 
 ## 6) Login and Role Access
 
@@ -176,18 +179,19 @@ Default admin values can be controlled with environment variables:
 ## 6.1 Backend Jobs
 
 - Hourly interview reminders notify students by email and optional Google Chat/SMS webhooks.
-- Daily application-deadline reminders remain available as an additional student notification.
-- On the first day of each month, the admin receives the institute HTML activity report and companies receive company-specific HTML/PDF reports.
+- Task (a): daily application-deadline reminders send student MailHog emails and Google Chat webhook messages.
+- Task (b): monthly activity reports send admin/company MailHog emails and a Google Chat webhook summary.
+- The app does not show an internal notifications panel. Notification events are delivered through Google Chat webhook and MailHog email, while the database keeps a small delivery log to avoid duplicate sends.
+- Celery beat syncs task (a) and task (b) every 120 seconds by default. Admins can also run both tasks manually from the dashboard.
 - Students and companies can trigger application/placement-history CSV exports. Each export runs in Celery and sends a completion alert.
-- Redis caches dashboard metrics, approved job listings, company search, student search, and public analytics with TTL and mutation-time invalidation.
+- Redis is used as the Celery broker/result backend for background jobs.
 
-## 6.2 Frontend, PWA, Analytics, and ATS
+## 6.2 Frontend and Analytics
 
 - Bootstrap layouts include mobile breakpoints and HTML5/Vue client validation; every mutation is validated again by the Flask API.
-- The public landing page uses Chart.js for placement trends, application funnel data, and approved-job skill demand.
-- The ATS résumé screener is available to students and companies inside the Vue UI.
-- `manifest.webmanifest` and the root-scoped service worker provide installable PWA behavior and an offline fallback.
-- Vue, Bootstrap, and Chart.js are installed through npm and bundled by Vue CLI. CDN scripts are not used by the active frontend.
+- The public landing page uses CDN Chart.js for placement trends, application funnel data, and approved-job skill demand.
+- Vue, Bootstrap, and Chart.js are loaded from CDN in `frontend/index.html`.
+- The browser UI is served as plain static files, which keeps local testing predictable.
 
 ## 7) Role-Wise Manual
 
@@ -264,7 +268,7 @@ In company drive form:
 
 ## 10) Dashboards and Charts
 
-Charts and analytics data are generated by the backend API layer in `backend/routes/api_routes.py`.
+Charts and analytics data are generated by the backend API layer in `backend/routes/public.py`.
 
 - Admin:
   - application status pie chart

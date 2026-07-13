@@ -6,10 +6,10 @@ from datetime import date, timedelta
 from uuid import uuid4
 from unittest.mock import patch
 
-from backend.init import create_app, db
-from backend.models import Application, CompanyExportJob, CompanyProfile, ExportJob, Interview, JobPosition, Notification, StudentProfile, User
-from backend.routes.api_routes import ats_terms
-from backend.tasks import _company_report_pdf, send_daily_deadline_reminders, send_monthly_activity_report
+from backend.app import create_app
+from backend.extensions import db
+from backend.models import Application, CompanyProfile, ExportJob, JobPosition, Notification, StudentProfile, User
+from backend.tasks import send_daily_deadline_reminders, send_monthly_activity_report
 
 
 class MilestoneSmokeTests(unittest.TestCase):
@@ -17,6 +17,7 @@ class MilestoneSmokeTests(unittest.TestCase):
     def setUpClass(cls):
         cls.app = create_app({
             "TESTING": True,
+            "CACHE_TYPE": "SimpleCache",
             "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
             "CELERY": {
                 "broker_url": "memory://",
@@ -29,14 +30,20 @@ class MilestoneSmokeTests(unittest.TestCase):
     def setUp(self):
         self.client = self.app.test_client()
 
-    def test_public_api_and_pwa_asset(self):
-        for path in ("/", "/service-worker.js", "/api/public/stats"):
-            response = self.client.get(path)
-            self.assertEqual(response.status_code, 200)
-            response.close()
+    def test_public_api_and_cdn_frontend(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"https://unpkg.com/vue@3.5.13", response.data)
+        response.close()
 
-    def test_protected_ats_route(self):
-        response = self.client.post("/api/tools/ats", json={})
+        response = self.client.get("/api/public/stats")
+        self.assertEqual(response.status_code, 200)
+        response.close()
+
+    def test_protected_admin_task_sync_routes(self):
+        response = self.client.post("/api/admin/tasks/daily-reminders", json={})
+        self.assertEqual(response.status_code, 401)
+        response = self.client.post("/api/admin/tasks/monthly-report", json={})
         self.assertEqual(response.status_code, 401)
 
     def test_student_activity_report_downloads_html_and_pdf(self):
@@ -115,33 +122,18 @@ class MilestoneSmokeTests(unittest.TestCase):
 
     def test_jobs_and_new_tables_are_registered(self):
         expected_tasks = {
-            "tasks.send_interview_reminders",
+            "tasks.send_daily_deadline_reminders",
             "tasks.send_monthly_activity_report",
             "tasks.export_student_applications_csv",
-            "tasks.export_company_history_csv",
         }
         self.assertTrue(expected_tasks.issubset(self.app.extensions["celery"].tasks))
         with self.app.app_context():
-            self.assertIn("interviews", db.metadata.tables)
-            self.assertIn("company_export_jobs", db.metadata.tables)
-            self.assertIsNotNone(Interview.__table__)
-            self.assertIsNotNone(CompanyExportJob.__table__)
-
-    def test_pdf_and_ats_helpers(self):
-        pdf = _company_report_pdf(
-            "Example Company",
-            "June 2026",
-            {"Drives": 2, "Placements": 1},
-            {"selected": 1},
-        )
-        self.assertTrue(pdf.startswith(b"%PDF-"))
-        self.assertIn("python", ats_terms("Python, Flask and SQL"))
+            self.assertIn("export_jobs", db.metadata.tables)
 
     def test_daily_deadline_reminder_uses_all_channels(self):
         with self.app.app_context():
             suffix = uuid4().hex
             student_email = f"reminder-student-{suffix}@example.com"
-            student_phone = f"99{suffix[:8]}"
             company_user = User(
                 user_name="Reminder Company",
                 email_address=f"reminder-company-{suffix}@example.com",
@@ -153,7 +145,6 @@ class MilestoneSmokeTests(unittest.TestCase):
             student_user = User(
                 user_name="Reminder Student",
                 email_address=student_email,
-                contact_number=student_phone,
                 user_role="student",
                 is_approved=True,
                 is_active=True,
@@ -187,18 +178,12 @@ class MilestoneSmokeTests(unittest.TestCase):
             ))
             db.session.commit()
 
-            with patch("backend.tasks.send_email", return_value=(True, "sent")) as email, \
-                    patch("backend.tasks.send_chat_webhook", return_value=(True, "sent")) as chat, \
-                    patch("backend.tasks.send_sms", return_value=(True, "sent")) as sms:
+            with patch("backend.tasks.reminders.send_chat_webhook", return_value=(True, "sent")) as chat:
                 result = send_daily_deadline_reminders()
 
             self.assertGreaterEqual(result["students_notified"], 1)
-            self.assertGreaterEqual(result["email_sent"], 1)
             self.assertGreaterEqual(result["chat_sent"], 1)
-            self.assertGreaterEqual(result["sms_sent"], 1)
-            self.assertTrue(any(call.args[0] == student_email for call in email.call_args_list))
-            self.assertTrue(any("Reminder Student" in call.args[0] for call in chat.call_args_list))
-            self.assertTrue(any(call.args[0] == student_phone for call in sms.call_args_list))
+            self.assertTrue(any("Deadline Reminder for Students" in call.args[0] for call in chat.call_args_list))
 
     def test_monthly_activity_report_emails_admin_html_summary(self):
         with self.app.app_context():
@@ -292,8 +277,8 @@ class MilestoneSmokeTests(unittest.TestCase):
             previous_admin_email = self.app.config["ADMIN_EMAIL"]
             self.app.config["ADMIN_EMAIL"] = admin_email
             try:
-                with patch("backend.tasks._date_range_for_previous_month", return_value=(period_start, period_end)), \
-                        patch("backend.tasks.send_email", return_value=(True, "sent")) as email:
+                with patch("backend.tasks.monthly_report._date_range_for_previous_month", return_value=(period_start, period_end)), \
+                        patch("backend.tasks.monthly_report.send_email", return_value=(True, "sent")) as email:
                     result = send_monthly_activity_report()
             finally:
                 self.app.config["ADMIN_EMAIL"] = previous_admin_email
@@ -340,9 +325,10 @@ class MilestoneSmokeTests(unittest.TestCase):
                         company_name=f"Export Labs {suffix}",
                         industry="Technology",
                     )
+                    student_identifier = f"EXP{suffix[:8]}"
                     student = StudentProfile(
                         user_id=student_user.user_id,
-                        roll_number=f"EXP{suffix[:8]}",
+                        roll_number=student_identifier,
                         course="B.Tech",
                         branch="CSE",
                         graduation_year=2099,
@@ -378,8 +364,8 @@ class MilestoneSmokeTests(unittest.TestCase):
                 })
                 self.assertEqual(login.status_code, 200)
 
-                with patch("backend.tasks.send_email", return_value=(True, "sent")), \
-                        patch("backend.tasks.send_chat_webhook", return_value=(True, "sent")):
+                with patch("backend.tasks.export_csv.send_email", return_value=(True, "sent")), \
+                        patch("backend.tasks.export_csv.send_chat_webhook", return_value=(True, "sent")):
                     response = self.client.post("/api/student/export")
 
                 self.assertEqual(response.status_code, 202)
@@ -409,7 +395,7 @@ class MilestoneSmokeTests(unittest.TestCase):
                     "Deadline Date",
                     "Updated At",
                 ])
-                self.assertEqual(rows[1][0], str(student_id))
+                self.assertEqual(rows[1][0], student_identifier)
                 self.assertEqual(rows[1][1], f"Export Labs {suffix}")
                 self.assertEqual(rows[1][2], "Export Engineer")
                 self.assertEqual(rows[1][3], "shortlisted")

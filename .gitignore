@@ -6,6 +6,7 @@ instance/
 .env
 data/.matplotlib/
 frontend/static/exports/
+frontend/static/uploads/
 frontend/dist/
 frontend/node_modules/
 frontend/.node_modules_corrupt_*/

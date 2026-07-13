@@ -4,9 +4,10 @@ info:
   version: 1.0.0
   description: |
     OpenAPI specification for the Placement Portal Flask API.
-    The browser UI is a Vue CLI single-page application in the frontend folder.
-    Flask exposes JSON APIs, uses SQLite for persistence, Redis for caching, and
-    Redis/Celery for batch jobs.
+    The browser UI is a CDN Vue single-page application served by Flask from
+    frontend. Vue, Bootstrap, and Chart.js load from CDN for simpler
+    viva explanation. Flask exposes JSON APIs, uses SQLite for persistence,
+    and uses Redis/Celery for batch jobs.
 
 servers:
   - url: http://127.0.0.1:5000
@@ -24,14 +25,14 @@ paths:
   /:
     get:
       tags: [Public]
-      summary: API root
+      summary: CDN frontend entry point
       responses:
         "200":
-          description: API service information
+          description: Placement Portal single-page application
           content:
-            application/json:
+            text/html:
               schema:
-                type: object
+                type: string
 
   /login:
     get:
