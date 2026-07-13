@@ -1,40 +1,12 @@
 import csv
-import json
 import os
-import ssl
 from datetime import datetime
-from urllib import request as urlrequest
-from urllib.error import URLError
 
-from flask import current_app, render_template
-from flask_mail import Message
+from flask import current_app
 
 from ..celery_app import celery_app
-from ..extensions import db, mail
+from ..extensions import db
 from ..models import Application, ExportJob, Notification
-
-
-def send_email(to_address, subject, html_body, text_body=None):
-    if not to_address:
-        return False, "missing recipient"
-    try:
-        mail.send(Message(subject=subject, recipients=[to_address], html=html_body, body=text_body))
-        return True, "sent"
-    except Exception as exc:
-        return False, str(exc)
-
-
-def send_chat_webhook(text):
-    webhook = current_app.config.get("CHAT_WEBHOOK_URL")
-    if not webhook:
-        return False, "chat webhook not configured"
-    request = urlrequest.Request(webhook, data=json.dumps({"text": text}).encode(), headers={"Content-Type": "application/json"}, method="POST")
-    context = None if current_app.config.get("WEBHOOK_VERIFY_SSL") else ssl._create_unverified_context()
-    try:
-        with urlrequest.urlopen(request, timeout=15, context=context) as response:
-            return response.status < 400, f"webhook returned {response.status}"
-    except (OSError, URLError) as exc:
-        return False, str(exc)
 
 
 def add_export_alert(export):
