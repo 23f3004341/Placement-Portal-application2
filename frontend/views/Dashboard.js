@@ -87,10 +87,73 @@ window.DashboardView = `
                 </p>
                 <div class="row g-3 mt-1">
                   <div class="col-lg-8">
-                    <div class="card border p-3 h-100"><canvas id="adminCompanyBarChart"></canvas></div>
+                    <div class="card border-0 bg-light-subtle shadow-sm h-100">
+                      <div class="card-body">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                          <h3 class="h6 fw-semibold mb-0">Applications by company</h3>
+                          <div class="d-flex flex-wrap gap-2 small">
+                            <span v-for="status in dashboard.company_analytics?.statuses || []" :key="status" class="badge border fw-normal" :class="statusBadgeClass(status)">
+                              {{ statusLabel(status) }}
+                            </span>
+                          </div>
+                        </div>
+                        <div v-if="companyAnalyticsRows().length" class="table-responsive">
+                          <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                              <tr>
+                                <th scope="col">Company</th>
+                                <th scope="col">Status spread</th>
+                                <th scope="col" class="text-end">Total</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="row in companyAnalyticsRows()" :key="row.label">
+                                <th scope="row" class="fw-semibold text-nowrap">{{ row.label }}</th>
+                                <td>
+                                  <div class="d-grid gap-2">
+                                    <div v-for="item in row.items" :key="row.label + item.status" class="row g-2 align-items-center">
+                                      <div class="col-4 col-md-3 small text-secondary">{{ statusLabel(item.status) }}</div>
+                                      <div class="col">
+                                        <div class="progress bg-white border" role="progressbar" :aria-label="row.label + ' ' + statusLabel(item.status)" :aria-valuenow="item.value" aria-valuemin="0" :aria-valuemax="adminAnalyticsMax()">
+                                          <div class="progress-bar" :class="[statusProgressClass(item.status), widthClass(item.value, adminAnalyticsMax())]"></div>
+                                        </div>
+                                      </div>
+                                      <div class="col-auto small fw-semibold">{{ item.value }}</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td class="text-end fw-semibold">{{ row.total }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <p v-else class="text-secondary mb-0">No company placement records yet.</p>
+                      </div>
+                    </div>
                   </div>
                   <div class="col-lg-4">
-                    <div class="card border p-3 h-100"><canvas id="adminOverallDoughnutChart"></canvas></div>
+                    <div class="card border-0 bg-light-subtle shadow-sm h-100">
+                      <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                          <div>
+                            <h3 class="h6 fw-semibold mb-1">Overall application record</h3>
+                            <p class="small text-secondary mb-0">{{ adminOverallTotal() }} applications</p>
+                          </div>
+                        </div>
+                        <div v-if="adminOverallRows().length" class="d-grid gap-3">
+                          <div v-for="item in adminOverallRows()" :key="item.status">
+                            <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                              <span class="badge border fw-normal" :class="statusBadgeClass(item.status)">{{ statusLabel(item.status) }}</span>
+                              <span class="small text-secondary">{{ item.value }} · {{ item.percent }}%</span>
+                            </div>
+                            <div class="progress bg-white border" role="progressbar" :aria-label="statusLabel(item.status)" :aria-valuenow="item.value" aria-valuemin="0" :aria-valuemax="adminOverallTotal()">
+                              <div class="progress-bar" :class="[statusProgressClass(item.status), widthClass(item.value, adminOverallTotal())]"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <p v-else class="text-secondary mb-0">No application records yet.</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

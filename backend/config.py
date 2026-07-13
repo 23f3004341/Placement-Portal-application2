@@ -3,6 +3,8 @@
 import os
 from datetime import timedelta
 
+from celery.schedules import crontab
+
 BACKEND_DIR = os.path.abspath(os.path.dirname(__file__))
 BASE_DIR = os.path.abspath(os.path.join(BACKEND_DIR, os.pardir))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
@@ -54,8 +56,9 @@ class Config:
     CHAT_WEBHOOK_URL = os.environ.get("CHAT_WEBHOOK_URL")
     WEBHOOK_VERIFY_SSL = os.environ.get("WEBHOOK_VERIFY_SSL", "false").lower() == "true"
 
-    # Deadline reminders are the only automated reminders and run every 30 minutes.
-    DEADLINE_REMINDER_SECONDS = int(os.environ.get("DEADLINE_REMINDER_SECONDS", "1800"))
+    # Deadline reminders run once every morning until the application deadline.
+    DEADLINE_REMINDER_HOUR = int(os.environ.get("DEADLINE_REMINDER_HOUR", "9"))
+    DEADLINE_REMINDER_MINUTE = int(os.environ.get("DEADLINE_REMINDER_MINUTE", "0"))
     # Keep the admin report frequent for project demonstrations and proctor review.
     ADMIN_REPORT_SECONDS = int(os.environ.get("ADMIN_REPORT_SECONDS", "120"))
     CELERY_TIMEZONE = os.environ.get("CELERY_TIMEZONE", "Asia/Kolkata")
@@ -69,9 +72,9 @@ class Config:
     }
 
     CELERY_BEAT_SCHEDULE = {
-        "deadline-reminders-every-30-minutes": {
+        "deadline-reminders-daily-at-9-am": {
             "task": "tasks.send_daily_deadline_reminders",
-            "schedule": timedelta(seconds=DEADLINE_REMINDER_SECONDS),
+            "schedule": crontab(minute=DEADLINE_REMINDER_MINUTE, hour=DEADLINE_REMINDER_HOUR),
         },
         "admin-activity-report-every-2-minutes": {
             "task": "tasks.send_monthly_activity_report",

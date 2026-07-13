@@ -152,28 +152,21 @@ window.AppTemplate = `
     <main class="container-xxl px-3 px-lg-4 py-4 py-lg-5 mt-4 mb-4 rounded-4 shadow-sm" :class="roleShellClass">
       <div
         v-if="alert.message"
-        class="d-inline-block"
+        class="position-fixed top-0 end-0 p-3 mt-5 z-3"
         role="status"
         aria-live="polite"
       >
         <div
-          class="alert alert-dismissible shadow-sm py-2 px-3 mb-4"
+          class="alert alert-dismissible d-flex align-items-center shadow rounded-3 py-2 ps-3 pe-5 mb-0"
           :class="'alert-' + alert.type"
         >
-          <div class="pe-4">{{ alert.message }}</div>
-          <div class="progress mt-2" style="height: 3px;">
-            <div
-              class="progress-bar"
-              :class="'bg-' + alert.type"
-              role="progressbar"
-              :style="{ width: alert.progress + '%' }"
-            ></div>
-          </div>
+          <div class="small fw-semibold">{{ alert.message }}</div>
           <button
-            class="btn-close"
+            class="btn btn-sm border-0 bg-transparent position-absolute top-0 end-0 mt-1 me-1 p-1 lh-1 text-secondary"
+            type="button"
             @click="dismissAlert"
             aria-label="Close"
-          ></button>
+          ><span aria-hidden="true">×</span></button>
         </div>
       </div>
       <div

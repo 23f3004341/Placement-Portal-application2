@@ -1,5 +1,4 @@
-const { createApp, nextTick } = Vue;
-const Chart = window.Chart;
+const { createApp } = Vue;
 
 
 const App = {
@@ -32,9 +31,7 @@ const App = {
         funnel: { labels: [], values: [] },
         skills: { labels: [], values: [] },
       },
-      charts: [],
       dashboard: { metrics: {} },
-      dashboardChartVersion: 0,
       dashboardRefreshTimer: null,
       search: "",
       companies: [],
@@ -213,16 +210,15 @@ const App = {
       const isWarm = this.hoveredNav === target || this.page === target;
       if (!isWarm || !this.user) return "";
       return {
-        student: "bg-success bg-gradient text-white border rounded px-3 shadow-sm",
-        company: "bg-warning bg-gradient text-dark border rounded px-3 shadow-sm",
-        admin: "bg-danger bg-gradient text-white border rounded px-3 shadow-sm",
-      }[this.user.role] || "bg-light rounded px-3";
+        student: "bg-success bg-gradient text-white border rounded px-2 py-1 shadow-sm",
+        company: "bg-warning bg-gradient text-dark border rounded px-2 py-1 shadow-sm",
+        admin: "bg-danger bg-gradient text-white border rounded px-2 py-1 shadow-sm",
+      }[this.user.role] || "bg-light rounded px-2 py-1";
     },
     notify(message, type = "success") {
       if (this.alertTimer) clearTimeout(this.alertTimer);
       if (this.alertProgressTimer) clearInterval(this.alertProgressTimer);
       this.alert = { message, type, progress: 100 };
-      window.scrollTo({ top: 0, behavior: "smooth" });
       const progressDuration = 1500;
       const visibleDuration = 2000;
       const startedAt = Date.now();
@@ -335,7 +331,7 @@ const App = {
       this.dashboard = { metrics: {} };
       if (this.exportPollTimer) clearTimeout(this.exportPollTimer);
       this.exportPollTimer = null;
-      this.notify("Logged out.", "info");
+      this.notify("Logged out.", "secondary");
       this.go("home");
     },
     async registerStudent() {
@@ -445,170 +441,108 @@ const App = {
     async loadPublicStats() {
       const result = await this.api("/api/public/stats");
       this.publicStats = result.data;
-      await nextTick();
-      this.renderCharts();
-    },
-    renderCharts() {
-      this.charts.forEach((chart) => chart.destroy());
-      this.charts = [];
-      const make = (id, config) => {
-        const el = document.getElementById(id);
-        if (el) this.charts.push(new Chart(el, config));
-      };
-      const base = { responsive: true, maintainAspectRatio: false };
-      make("trendChart", {
-        type: "line",
-        data: {
-          labels: this.publicStats.trends.labels,
-          datasets: [
-            {
-              label: "Placements",
-              data: this.publicStats.trends.values,
-              borderColor: "#2563eb",
-              backgroundColor: "rgba(37,99,235,.15)",
-              fill: true,
-              tension: 0.3,
-            },
-          ],
-        },
-        options: base,
-      });
-      make("funnelChart", {
-        type: "doughnut",
-        data: {
-          labels: this.publicStats.funnel.labels,
-          datasets: [
-            {
-              data: this.publicStats.funnel.values,
-              backgroundColor: [
-                "#64748b",
-                "#f59e0b",
-                "#3b82f6",
-                "#22c55e",
-                "#ef4444",
-              ],
-            },
-          ],
-        },
-        options: base,
-      });
-      make("skillsChart", {
-        type: "bar",
-        data: {
-          labels: this.publicStats.skills.labels,
-          datasets: [
-            {
-              label: "Approved job mentions",
-              data: this.publicStats.skills.values,
-              backgroundColor: "#7c3aed",
-            },
-          ],
-        },
-        options: {
-          ...base,
-          indexAxis: "y",
-          plugins: { legend: { display: false } },
-        },
-      });
     },
     async loadDashboard() {
       if (!this.user) return;
       const result = await this.api(`/api/${this.user.role}/dashboard`);
       this.dashboard = result.data;
-      if (["admin", "company"].includes(this.user.role)) this.dashboardChartVersion = Date.now();
-      await nextTick();
-      this.renderDashboardCharts();
       if (["admin", "company"].includes(this.user.role) && this.page === "dashboard") {
         if (this.dashboardRefreshTimer) clearTimeout(this.dashboardRefreshTimer);
         this.dashboardRefreshTimer = setTimeout(() => this.loadDashboard(), 30000);
       }
     },
-    renderDashboardCharts() {
-      this.charts.forEach((chart) => chart.destroy());
-      this.charts = [];
-      if (this.user?.role === "admin" && this.dashboard.company_analytics) {
-        const analytics = this.dashboard.company_analytics;
-        const palette = ["#9aabba", "#c9b48b", "#80a995", "#bc898f"];
-        const labels = { applied: "Applied", shortlisted: "Shortlisted", placed: "Placed", rejected: "Rejected" };
-        const barEl = document.getElementById("adminCompanyBarChart");
-        const doughnutEl = document.getElementById("adminOverallDoughnutChart");
-        const overallTotal = analytics.statuses.reduce((total, status) => total + Number(analytics.overall[status] || 0), 0);
-        const centerTotalPlugin = {
-          id: "centerTotal",
-          afterDraw(chart) {
-            const { ctx, chartArea } = chart;
-            if (!chartArea) return;
-            const x = (chartArea.left + chartArea.right) / 2;
-            const y = (chartArea.top + chartArea.bottom) / 2;
-            ctx.save();
-            ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillStyle = "#343a40"; ctx.font = "600 26px system-ui"; ctx.fillText(String(overallTotal), x, y - 7);
-            ctx.fillStyle = "#6c757d"; ctx.font = "12px system-ui"; ctx.fillText("applications", x, y + 17);
-            ctx.restore();
-          },
-        };
-        const commonLegend = {
-          position: "bottom",
-          labels: { usePointStyle: true, pointStyle: "rectRounded", boxWidth: 10, boxHeight: 10, padding: 18, color: "#4f555b", font: { size: 12 } },
-        };
-        if (barEl) this.charts.push(new Chart(barEl, {
-          type: "bar",
-          data: {
-            labels: analytics.labels,
-            datasets: analytics.statuses.map((status, index) => ({
-              label: labels[status], data: analytics.series[status], backgroundColor: palette[index],
-              borderColor: palette[index], borderWidth: 1, borderRadius: 7, borderSkipped: false,
-              maxBarThickness: 42, categoryPercentage: .72, barPercentage: .82,
-            })),
-          },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            interaction: { mode: "index", intersect: false },
-            plugins: { legend: commonLegend, title: { display: true, text: "Applications by company", color: "#3f464d", font: { size: 15, weight: "500" }, padding: { bottom: 18 } }, tooltip: { padding: 12, cornerRadius: 8 } },
-            scales: {
-              x: { grid: { display: false }, ticks: { color: "#555d64", font: { size: 12 } } },
-              y: { beginAtZero: true, suggestedMax: 3, ticks: { precision: 0, stepSize: 1, color: "#687078" }, grid: { color: "rgba(90, 98, 105, .1)" }, border: { display: false } },
-            },
-          },
+    metricRows(group) {
+      const data = this.publicStats[group] || { labels: [], values: [] };
+      return (data.labels || []).map((label, index) => ({
+        label,
+        value: Number((data.values || [])[index] || 0),
+      }));
+    },
+    metricMax(group) {
+      return Math.max(...this.metricRows(group).map((item) => item.value), 1);
+    },
+    metricTotal(group) {
+      return this.metricRows(group).reduce((total, item) => total + item.value, 0);
+    },
+    metricPercent(value, total) {
+      if (!total) return 0;
+      return Math.round((Number(value || 0) / total) * 100);
+    },
+    widthClass(value, max) {
+      const percent = this.metricPercent(value, max || 1);
+      if (percent <= 0) return "d-none";
+      if (percent <= 25) return "w-25";
+      if (percent <= 50) return "w-50";
+      if (percent <= 75) return "w-75";
+      return "w-100";
+    },
+    statusLabel(status) {
+      return ({
+        applied: "Applied",
+        shortlisted: "Shortlisted",
+        interview: "Interview",
+        placed: "Placed",
+        rejected: "Rejected",
+        offer: "Offer",
+      })[String(status || "").toLowerCase()] || String(status || "Status");
+    },
+    statusBadgeClass(status) {
+      return ({
+        applied: "bg-secondary-subtle text-secondary-emphasis border-secondary-subtle",
+        shortlisted: "bg-warning-subtle text-warning-emphasis border-warning-subtle",
+        interview: "bg-info-subtle text-info-emphasis border-info-subtle",
+        placed: "bg-success-subtle text-success-emphasis border-success-subtle",
+        rejected: "bg-danger-subtle text-danger-emphasis border-danger-subtle",
+        offer: "bg-primary-subtle text-primary-emphasis border-primary-subtle",
+      })[String(status || "").toLowerCase()] || "bg-light text-secondary border-secondary-subtle";
+    },
+    statusProgressClass(status) {
+      return ({
+        applied: "bg-secondary-subtle text-secondary-emphasis",
+        shortlisted: "bg-warning-subtle text-warning-emphasis",
+        interview: "bg-info-subtle text-info-emphasis",
+        placed: "bg-success-subtle text-success-emphasis",
+        rejected: "bg-danger-subtle text-danger-emphasis",
+        offer: "bg-primary-subtle text-primary-emphasis",
+      })[String(status || "").toLowerCase()] || "bg-secondary-subtle text-secondary-emphasis";
+    },
+    companyAnalyticsRows() {
+      const analytics = this.dashboard.company_analytics || {};
+      const labels = analytics.labels || [];
+      const statuses = analytics.statuses || [];
+      const series = analytics.series || {};
+      return labels.map((label, index) => {
+        const items = statuses.map((status) => ({
+          status,
+          value: Number((series[status] || [])[index] || 0),
         }));
-        if (doughnutEl) this.charts.push(new Chart(doughnutEl, {
-          type: "doughnut",
-          plugins: [centerTotalPlugin],
-          data: {
-            labels: analytics.statuses.map((status) => labels[status]),
-            datasets: [{ data: analytics.statuses.map((status) => analytics.overall[status]), backgroundColor: palette, borderColor: "#fff", borderWidth: 3, hoverOffset: 7 }],
-          },
-          options: {
-            responsive: true, maintainAspectRatio: false, cutout: "64%",
-            plugins: { legend: commonLegend, title: { display: true, text: "Overall application record", color: "#3f464d", font: { size: 15, weight: "500" }, padding: { bottom: 18 } }, tooltip: { padding: 12, cornerRadius: 8 } },
-          },
-        }));
-        return;
-      }
-      const el = document.getElementById("adminPlacementChart");
-      if (!el || !this.dashboard.placement_chart) return;
-      this.charts.push(
-        new Chart(el, {
-          type: "bar",
-          data: {
-            labels: this.dashboard.placement_chart.labels,
-            datasets: [
-              {
-                label: "Placements",
-                data: this.dashboard.placement_chart.values,
-                backgroundColor: "#7c3aed",
-                borderRadius: 8,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
-          },
-        })
-      );
+        return {
+          label,
+          items,
+          total: items.reduce((total, item) => total + item.value, 0),
+        };
+      });
+    },
+    adminAnalyticsMax() {
+      const values = this.companyAnalyticsRows().flatMap((row) => row.items.map((item) => item.value));
+      return Math.max(...values, 1);
+    },
+    adminOverallTotal() {
+      const overall = this.dashboard.company_analytics?.overall || {};
+      return Object.values(overall).reduce((total, value) => total + Number(value || 0), 0);
+    },
+    adminOverallRows() {
+      const analytics = this.dashboard.company_analytics || {};
+      const overall = analytics.overall || {};
+      const total = this.adminOverallTotal();
+      return (analytics.statuses || []).map((status) => {
+        const value = Number(overall[status] || 0);
+        return {
+          status,
+          value,
+          percent: this.metricPercent(value, total),
+        };
+      }).filter((item) => item.value > 0);
     },
     async pollExportStatus(exportId) {
       if (this.exportPollTimer) clearTimeout(this.exportPollTimer);

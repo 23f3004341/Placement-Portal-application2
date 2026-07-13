@@ -1,0 +1,5 @@
+# This project uses the CDN build of Vue, so its Vue components and templates
+# intentionally live in JavaScript files instead of single-file .vue files.
+# Tell GitHub Linguist to report the frontend framework accurately.
+frontend/*.js linguist-language=Vue
+frontend/**/*.js linguist-language=Vue
