@@ -1,4 +1,4 @@
-"""Small Celery setup file, matching the viva-friendly project layout."""
+"""Small Celery setup file."""
 
 from celery import Celery, Task
 

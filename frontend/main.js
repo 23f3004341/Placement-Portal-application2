@@ -1,6 +1,9 @@
 const { createApp } = Vue;
 
 
+// Root Vue component for the whole SPA. 
+// It holds all shared state (current user, current page, fetched lists) and every action method.
+// The view templates in views are stitched into one big template by Layout.js.
 const App = {
   name: "App",
   template: window.AppTemplate,
@@ -11,6 +14,8 @@ const App = {
     DriveTable,
     ApplicationTable,
   },
+  // Single reactive state object shared across every view (auth, dashboards,
+  // admin/company/student lists, forms, and UI timers).
   data() {
     return {
       page: "home",
